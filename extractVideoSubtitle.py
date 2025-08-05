@@ -169,15 +169,19 @@ def main():
     """
     parser = argparse.ArgumentParser(description="YouTube 비디오를 다운로드하거나 로컬 비디오 파일을 사용하여 오디오 및 텍스트를 추출합니다.")
     
-    # --code와 --video를 상호 배타적인 인수로 설정
+    # --youtube와 --video를 상호 배타적인 인수로 설정
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
-        "--code", 
+        "--youtube", 
         help="다운로드할 YouTube 비디오의 코드 또는 전체 URL."
     )
     group.add_argument(
         "--video",
         help="처리할 로컬 비디오 파일의 경로."
+    )
+    group.add_argument(
+        "--download",
+        help="다운로드할 YouTube 비디오의 코드 또는 전체 URL."
     )
     
     parser.add_argument(
@@ -190,9 +194,14 @@ def main():
     
     video_file_path = None
 
-    if args.code:
+    if args.download:
+        if not args.quality:
+            args.quality = "720p"
+        video_file_path = download_youtube_video_cli(args.download, args.quality)
+        return
+    elif args.youtube:
         # 1. YouTube 비디오 다운로드
-        video_file_path = download_youtube_video_cli(args.code, args.quality)
+        video_file_path = download_youtube_video_cli(args.youtube, args.quality)
     elif args.video:
         # 로컬 비디오 파일 사용
         if not os.path.exists(args.video):

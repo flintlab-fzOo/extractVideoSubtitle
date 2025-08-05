@@ -21,7 +21,7 @@
 
 ## 실행(영상 자막파일 생성)
 ### 프로세스
- - 1-1. code 파라미터로 유튜브 videoId 값이 넘어온경우
+ - 1-1. youtube 파라미터로 유튜브 videoId,url 값이 넘어온경우
 	 - 영상 다운로드(기본값 480p 화질 다운로드)
 	 - 오디오 추출로 진행
  - 1-2. video 파라미터로 영상 파일경로 값이 넘어온경우 바로 오디오 추출로 진행
@@ -29,15 +29,25 @@
  - 3. 오디오 파일로 소리로 자막 추출
  - downloads 폴더에 영상파일, 영상파일명.mp3, 영상파일명.srt 생성됨.
 ### 유튜브 영상
- - 유튜브 영상에는 videoId 를 복사
-	 - https://www.youtube.com/watch?v=S_TzW8DkCyE
-	 - 위 URL 파라미터 v 값이 videoId
  - 자막 추출 실행
 ```
-$ uv run extractVideoSubtitle.py --code S_TzW8DkCyE
+$ export PYTHONIOENCODING=utf-8
+
+$ uv run extractVideoSubtitle.py --youtube e9S9Ai21wWo > logs/e9S9Ai21wWo.log
+or
+$ uv run extractVideoSubtitle.py --youtube https://www.youtube.com/watch?v=e9S9Ai21wWo > logs/e9S9Ai21wWo.log
+
+$ tail -f logs/e9S9Ai21wWo.log
 ```
 
 ### 영상 파일
 ```
 $ uv run extractVideoSubtitle.py --video downloads/\[날씨\]\ 다시\ 전국\ 대부분\ 폭염\ 특보…곳곳에\ 소나기\ ⧸\ KBS\ \ 2025.08.05.\ \[S_TzW8DkCyE\].mkv
+```
+
+### 유튜브 영상만 다운로드
+ - 영상만 다운로드하고 자막추출은 하지 않습니다.
+ - quality 옵션으로 화질을 선택할 수 있습니다.(기본값 720p)
+```
+$ uv run extractVideoSubtitle.py --download e9S9Ai21wWo --quality 1080p
 ```

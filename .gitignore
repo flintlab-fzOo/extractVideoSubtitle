@@ -11,3 +11,5 @@ Whisper-Faster/*
 .venv
 downloads
 downloads/*
+logs/*
+logs
