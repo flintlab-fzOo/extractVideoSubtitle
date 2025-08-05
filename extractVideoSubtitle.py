@@ -173,35 +173,38 @@ def main():
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
         "--youtube", 
-        help="다운로드할 YouTube 비디오의 코드 또는 전체 URL."
+        help="다운로드할 YouTube 비디오의 코드 또는 전체 URL. (오디오/자막 추출 실행)"
     )
     group.add_argument(
         "--video",
-        help="처리할 로컬 비디오 파일의 경로."
+        help="처리할 로컬 비디오 파일의 경로. (오디오/자막 추출 실행)"
     )
     group.add_argument(
         "--download",
-        help="다운로드할 YouTube 비디오의 코드 또는 전체 URL."
+        help="YouTube 비디오를 다운로드만 실행."
     )
     
     parser.add_argument(
         "--quality", 
-        default="480p", 
-        help="YouTube 다운로드 시 사용할 비디오 화질 (예: 1080p, 720p, 480p 등). 기본값: 480p"
+        default=None, 
+        help="YouTube 다운로드 시 사용할 비디오 화질 (예: 1080p, 720p 등). 기본값: --youtube(480p), --download(720p)"
     )
     
     args = parser.parse_args()
     
     video_file_path = None
+    quality = args.quality
 
     if args.download:
-        if not args.quality:
-            args.quality = "720p"
-        video_file_path = download_youtube_video_cli(args.download, args.quality)
+        if quality is None:
+            quality = "720p"
+        video_file_path = download_youtube_video_cli(args.download, quality)
         return
     elif args.youtube:
+        if quality is None:
+            quality = "480p"
         # 1. YouTube 비디오 다운로드
-        video_file_path = download_youtube_video_cli(args.youtube, args.quality)
+        video_file_path = download_youtube_video_cli(args.youtube, quality)
     elif args.video:
         # 로컬 비디오 파일 사용
         if not os.path.exists(args.video):
