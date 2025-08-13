@@ -48,6 +48,11 @@ def extract_audio(video_path, output_path=None):
             base, _ = os.path.splitext(video_path)
             output_path = base + '.mp3'
 
+        # 오디오 파일이 이미 존재하는지 확인
+        if os.path.exists(output_path):
+            print(f"이미 추출된 오디오 파일입니다: {output_path}")
+            return output_path
+
         print(f"오디오 추출 시작: {video_path} -> {output_path}")
         
         # ffmpeg를 사용하여 오디오 추출
