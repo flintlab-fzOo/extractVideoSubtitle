@@ -5,6 +5,8 @@
 
 ## ffmpeg 설치
  - https://ffmpeg.org/download.html
+ - https://github.com/BtbN/FFmpeg-Builds/releases
+ - download 후 환경변수 path에 bin 폴더 경로 추가
 
 ## 팟플레이어 다운로드 및 설치
  - https://potplayer.tv/
