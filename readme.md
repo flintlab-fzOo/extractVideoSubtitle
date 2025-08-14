@@ -47,7 +47,7 @@ $ tail -f logs/e9S9Ai21wWo.log
 
 ### 영상 파일
 ```
-$ uv run extractVideoSubtitle.py --video downloads/\[날씨\]\ 다시\ 전국\ 대부분\ 폭염\ 특보…곳곳에\ 소나기\ ⧸\ KBS\ \ 2025.08.05.\ \[S_TzW8DkCyE\].mkv
+$ uv run extractVideoSubtitle.py --video "downloads/\[날씨\] 다시 전국 대부분 폭염 특보…곳곳에 소나기 ⧸ KBS  2025.08.05. \[S_TzW8DkCyE\].mkv"
 ```
 
 ### 유튜브 영상만 다운로드
@@ -55,4 +55,26 @@ $ uv run extractVideoSubtitle.py --video downloads/\[날씨\]\ 다시\ 전국\ �
  - quality 옵션으로 화질을 선택할 수 있습니다.(기본값 720p)
 ```
 $ uv run extractVideoSubtitle.py --download e9S9Ai21wWo --quality 1080p
+```
+
+## AI 요약 실행
+ - 자막 추출 후 AI를 통해 내용을 요약합니다.
+ - `--summary` 옵션을 추가하면 자막 생성 후 자동으로 AI 요약을 실행합니다.
+ - 요약 결과는 `result` 폴더에 `{영상파일명}.md` 파일로 저장됩니다.
+ - 기본 AI 모델은 `Gemini` 입니다. `Ollama` 모델을 사용하려면 `extractVideoSubtitle.py`의 `run_transcription` 함수 내 `summary_command`를 수정해야 합니다.
+
+### 유튜브 영상 요약
+```
+$ uv run extractVideoSubtitle.py --youtube e9S9Ai21wWo --summary
+```
+
+### 로컬 영상 파일 요약
+```
+$ uv run python extractVideoSubtitle.py --video "downloads/\[날씨\] 다시 전국 대부분 폭염 특보…곳곳에 소나기 ⧸ KBS  2025.08.05. \[S_TzW8DkCyE\].mkv" --summary
+```
+
+### (Ollama 사용 시) CPU로 요약 실행
+ - `aisummary.py`를 직접 호출하여 `--cpu`와 `--model ollama` 옵션을 사용할 수 있습니다.
+```
+$ uv run aisummary.py --input "downloads/영상파일명.srt" --model ollama --cpu
 ```
