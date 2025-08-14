@@ -6,10 +6,10 @@ import argparse
 
 from ai.GeminiAI import GeminiAI
 
-ollama_model_name="gpt-oss:20b"
-system_prompt_file="./prompt/영상요약프롬프트.md"
-prompt_file="./downloads/YC1V4EeX5Q8.srt"
-result_file="./result/YC1V4EeX5Q8.md"
+# ollama_model_name="gpt-oss:20b"
+# system_prompt_file="./prompt/영상요약프롬프트.md"
+# prompt_file="./downloads/YC1V4EeX5Q8.srt"
+result_file="./result/result.md"
 
 def chat(chatmsg, system_prompt="", model_name="gpt-oss:20b", temperature=0.5, use_gpu=True):
     try:
@@ -35,7 +35,7 @@ def chat(chatmsg, system_prompt="", model_name="gpt-oss:20b", temperature=0.5, u
 
         start_time = time.time()
         res = ollama.chat(
-            model=ollama_model_name,
+            model=model_name,
             messages=messages,
             options=ollama_options
         )

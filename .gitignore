@@ -13,3 +13,4 @@ downloads
 downloads/*
 logs/*
 logs
+*.pyc
