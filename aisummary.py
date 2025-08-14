@@ -45,7 +45,7 @@ def chat(chatmsg, system_prompt="", model_name="gpt-oss:20b", temperature=0.5, u
         # export CUDA_VISIBLE_DEVICES=0
         # os.environ['CUDA_VISIBLE_DEVICES'] = 'GPU-93779944-3708-cb7b-b6f1-cf49656fe4aa'
         os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-        os.environ['OLLAMA_USE_CPU'] = '1'
+        os.environ['OLLAMA_USE_GPU'] = '1'
         
         print(f"Ollama 실행 모드: {'GPU' if use_gpu else 'CPU'}")
 
