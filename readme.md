@@ -70,7 +70,7 @@ $ uv run extractVideoSubtitle.py --youtube e9S9Ai21wWo --summary
 
 ### 로컬 영상 파일 요약
 ```
-$ uv run python extractVideoSubtitle.py --video "downloads/\[날씨\] 다시 전국 대부분 폭염 특보…곳곳에 소나기 ⧸ KBS  2025.08.05. \[S_TzW8DkCyE\].mkv" --summary
+$ uv run extractVideoSubtitle.py --video "downloads/\[날씨\] 다시 전국 대부분 폭염 특보…곳곳에 소나기 ⧸ KBS  2025.08.05. \[S_TzW8DkCyE\].mkv" --summary
 ```
 
 ### (Ollama 사용 시) CPU로 요약 실행
