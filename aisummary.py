@@ -3,7 +3,7 @@ import time
 import requests
 import os
 import argparse
-
+import subprocess
 from ai.GeminiAI import GeminiAI
 
 # ollama_model_name="gpt-oss:20b"
@@ -11,8 +11,13 @@ from ai.GeminiAI import GeminiAI
 # prompt_file="./downloads/YC1V4EeX5Q8.srt"
 result_file="./result/result.md"
 
+
 def chat(chatmsg, system_prompt="", model_name="gpt-oss:20b", temperature=0.5, use_gpu=True):
     try:
+        # ollama 실행 안되어 있는경우 실행하기위해 커맨드 실행
+        ollama_command = ['ollama', 'list']
+        subprocess.run(ollama_command, check=True)
+
         messages = []
         if system_prompt:
             messages.append({
@@ -28,8 +33,15 @@ def chat(chatmsg, system_prompt="", model_name="gpt-oss:20b", temperature=0.5, u
         # GPU를 사용하려면 num_gpu를 1 이상으로, CPU만 사용하려면 0으로 설정합니다.
         ollama_options = {
             'temperature': temperature,
-            'num_gpu': 1 if use_gpu else 0  
+            'num_gpu': 999 if use_gpu else 0,
+            'num_thread': -1, # 자동 스레드 수 감지
         }
+
+        # https://github.com/ollama/ollama/blob/main/docs/gpu.md
+        # nvidia-smi -L
+        # set CUDA_VISIBLE_DEVICES='GPU-93779944-3708-cb7b-b6f1-cf49656fe4aa'
+        # export CUDA_VISIBLE_DEVICES=0
+        # os.environ['CUDA_VISIBLE_DEVICES'] = 'GPU-93779944-3708-cb7b-b6f1-cf49656fe4aa'
         
         print(f"Ollama 실행 모드: {'GPU' if use_gpu else 'CPU'}")
 
