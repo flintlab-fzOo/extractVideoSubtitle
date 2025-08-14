@@ -15,8 +15,8 @@ result_file="./result/result.md"
 def chat(chatmsg, system_prompt="", model_name="gpt-oss:20b", temperature=0.5, use_gpu=True):
     try:
         # ollama 실행 안되어 있는경우 실행하기위해 커맨드 실행
-        ollama_command = ['ollama', 'list']
-        subprocess.run(ollama_command, check=True)
+        # ollama_command = ['ollama', 'list']
+        # subprocess.run(ollama_command, check=True)
 
         messages = []
         if system_prompt:
@@ -33,8 +33,10 @@ def chat(chatmsg, system_prompt="", model_name="gpt-oss:20b", temperature=0.5, u
         # GPU를 사용하려면 num_gpu를 1 이상으로, CPU만 사용하려면 0으로 설정합니다.
         ollama_options = {
             'temperature': temperature,
-            'num_gpu': 999 if use_gpu else 0,
-            # 'num_thread': -1, # 자동 스레드 수 감지
+            # 'num_gpu': 20 if use_gpu else 0,
+            'num_gpu': 9 if use_gpu else 0,
+            # "num_ctx": 2048,  # 예: context window 사이즈
+            'num_thread': -1, # 자동 스레드 수 감지
         }
 
         # https://github.com/ollama/ollama/blob/main/docs/gpu.md

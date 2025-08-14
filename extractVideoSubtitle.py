@@ -140,12 +140,13 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
         print(f"오류 발생: {str(e)}")
         return None
 
-def run_transcription(audio_path, summary=False):
+def run_transcription(audio_path, video_path, summary=False):
     """
     Whisper-Faster를 사용하여 오디오 파일의 텍스트를 추출합니다.
 
     Parameters:
         audio_path (str): 텍스트를 추출할 오디오 파일 경로.
+        video_path (str): 원본 비디오 파일 경로.
         summary (bool): 텍스트 추출 후 요약을 실행할지 여부.
     """
     try:
@@ -166,15 +167,24 @@ def run_transcription(audio_path, summary=False):
         
         print("\n텍스트 추출 완료.")
 
-        if summary:
-            # 자막 파일 경로 생성 (오디오 파일과 이름이 같고 확장자만 .srt)
-            subtitle_path = os.path.splitext(audio_path)[0] + '.srt'
-            if os.path.exists(subtitle_path):
-                print(f"\n'{subtitle_path}' 파일에 대한 요약 실행...")
+        # 자막 파일 경로 생성 (오디오 파일과 이름이 같고 확장자만 .srt)
+        subtitle_path = os.path.splitext(audio_path)[0] + '.srt'
+        
+        if os.path.exists(subtitle_path):
+            # 자막 파일 마지막에 영상 파일명 추가
+            try:
+                with open(subtitle_path, 'a', encoding='utf-8') as f:
+                    f.write(f"{os.path.basename(video_path)}")
+                print(f"영상 파일명을 자막 파일에 추가했습니다: {subtitle_path}")
+            except Exception as e:
+                print(f"자막 파일에 영상 파일명을 추가하는 중 오류 발생: {e}")
+
+            if summary:
+                print(f"{subtitle_path} 파일에 대한 요약 실행...")
                 summary_command = ['uv', 'run', 'aisummary.py', '--input', f"./{subtitle_path}"]
                 subprocess.run(summary_command, check=True)
-            else:
-                print(f"오류: 자막 파일을 찾을 수 없습니다 - {subtitle_path}")
+        else:
+            print(f"오류: 자막 파일을 찾을 수 없습니다 - {subtitle_path}")
 
     except FileNotFoundError:
         print(f"오류: 'whisper-faster.exe'를 찾을 수 없습니다. 경로를 확인하세요.")
@@ -251,9 +261,8 @@ def main():
         
         # 3. 텍스트 추출 (오디오 추출 성공 시)
         if audio_file:
-            run_transcription(audio_file, args.summary)
+            run_transcription(audio_file, video_file_path, args.summary)
 
 
 if __name__ == "__main__":
     main()
-
