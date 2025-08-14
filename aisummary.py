@@ -34,7 +34,7 @@ def chat(chatmsg, system_prompt="", model_name="gpt-oss:20b", temperature=0.5, u
         ollama_options = {
             'temperature': temperature,
             'num_gpu': 999 if use_gpu else 0,
-            'num_thread': -1, # 자동 스레드 수 감지
+            # 'num_thread': -1, # 자동 스레드 수 감지
         }
 
         # https://github.com/ollama/ollama/blob/main/docs/gpu.md
@@ -42,6 +42,8 @@ def chat(chatmsg, system_prompt="", model_name="gpt-oss:20b", temperature=0.5, u
         # set CUDA_VISIBLE_DEVICES='GPU-93779944-3708-cb7b-b6f1-cf49656fe4aa'
         # export CUDA_VISIBLE_DEVICES=0
         # os.environ['CUDA_VISIBLE_DEVICES'] = 'GPU-93779944-3708-cb7b-b6f1-cf49656fe4aa'
+        os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+        os.environ['OLLAMA_USE_CPU'] = '1'
         
         print(f"Ollama 실행 모드: {'GPU' if use_gpu else 'CPU'}")
 

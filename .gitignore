@@ -14,3 +14,4 @@ downloads/*
 logs/*
 logs
 *.pyc
+*.tmp
