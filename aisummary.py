@@ -116,7 +116,7 @@ def main():
     parser.add_argument("--input", required=True, help="Path to the input file (e.g., subtitle file).")
     parser.add_argument("--system_prompt", default="./prompt/영상요약프롬프트.md", help="Path to the system prompt file.")
     parser.add_argument("--output", default="./result/result.md", help="Path to the output file.")
-    parser.add_argument("--model", default="ollama", help="AI model to use ('ollama' or 'gemini').")
+    parser.add_argument("--model", default="gemini", help="AI model to use ('ollama' or 'gemini').")
     parser.add_argument("--ollama_model_name", default="gpt-oss:20b", help="Ollama model name to use.")
     parser.add_argument("--gemini_model_name", default="gemini-2.5-pro", help="Gemini model name to use.")
     parser.add_argument("--cpu", action='store_true', help="Force CPU usage for Ollama.")
@@ -135,7 +135,8 @@ def main():
             user_prompt = f.read()
 
         # Get chat completion
-        with Spinner("AI 요청중... "):
+        modelnm = args.ollama_model_name if args.model == 'ollama' else args.gemini_model_name
+        with Spinner(f"AI({args.model} {modelnm}) 요청중... "):
             if args.model == 'ollama':
                 # --cpu 플래그가 있으면 GPU를 사용하지 않음 (use_gpu=False)
                 use_gpu = not args.cpu
