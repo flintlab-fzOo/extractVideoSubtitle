@@ -8,6 +8,8 @@ import ffmpeg
 # .env 파일에서 환경 변수 로드
 load_dotenv(verbose=True)
 
+os.environ['PYTHONIOENCODING'] = 'utf-8'
+
 def get_download_formats(target_quality):
     """
     주어진 화질에 맞는 YouTube 다운로드 포맷 문자열을 반환합니다.
@@ -62,6 +64,19 @@ def extract_audio(video_path, output_path=None, video_id=None):
         
         # ffmpeg를 사용하여 오디오 추출
         ffmpeg.input(video_path).output(output_path, acodec='libmp3lame').run(overwrite_output=True, quiet=True)
+        """
+        # 오디오 파일 유효성 검사 (길이 확인)
+        try:
+            probe = ffmpeg.probe(output_path)
+            duration = float(probe['format']['duration'])
+            if duration < 1:
+                print(f"오류: 추출된 오디오 파일이 너무 짧거나 비어있습니다 (길이: {duration}초).")
+                os.remove(output_path) # 유효하지 않은 파일 삭제
+                return None
+        except (ffmpeg.Error, KeyError, ValueError) as e:
+            print(f"오류: 추출된 오디오 파일의 정보를 읽을 수 없습니다. {e}")
+            return None
+        """
 
         print(f"오디오 추출 완료: {output_path}")
         return output_path
@@ -159,6 +174,7 @@ def run_transcription(audio_path, video_path, summary=False, video_id=None):
             print(f"오류: 실행 파일을 찾을 수 없습니다 - {executable_path}")
             return
 
+        # command = [executable_path, audio_path]
         command = [executable_path, '--batch_recursive', audio_path]
         
         print(f"\n텍스트 추출 실행: {' '.join(command)}")
