@@ -9,7 +9,7 @@ from ai.GeminiAI import GeminiAI
 # ollama_model_name="gpt-oss:20b"
 # system_prompt_file="./prompt/영상요약프롬프트.md"
 # prompt_file="./downloads/YC1V4EeX5Q8.srt"
-result_file="./result/result.md"
+
 
 
 def chat(chatmsg, system_prompt="", model_name="gpt-oss:20b", temperature=0.5, use_gpu=True):
@@ -87,6 +87,7 @@ def main():
     parser = argparse.ArgumentParser(description="AI Chat using Ollama or Gemini.")
     parser.add_argument("--input", required=True, help="Path to the input file (e.g., subtitle file).")
     parser.add_argument("--system_prompt", default="./prompt/영상요약프롬프트.md", help="Path to the system prompt file.")
+    parser.add_argument("--output", default="./result/result.md", help="Path to the output file.")
     parser.add_argument("--model", default="ollama", help="AI model to use ('ollama' or 'gemini').")
     parser.add_argument("--ollama_model_name", default="gpt-oss:20b", help="Ollama model name to use.")
     parser.add_argument("--gemini_model_name", default="gemini-2.5-pro", help="Gemini model name to use.")
@@ -116,10 +117,10 @@ def main():
         print(f"응답 시간: {response_time:.2f}초")
 
         # Save result to file
-        with open(result_file, 'w', encoding='utf-8') as f:
+        with open(args.output, 'w', encoding='utf-8') as f:
             f.write(response)
         
-        print(f"결과가 '{result_file}' 파일에 저장되었습니다.")
+        print(f"결과가 '{args.output}' 파일에 저장되었습니다.")
 
     except FileNotFoundError as e:
         print(f"오류: 파일을 찾을 수 없습니다 - {e}")

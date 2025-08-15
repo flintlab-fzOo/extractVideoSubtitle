@@ -140,7 +140,7 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
         print(f"오류 발생: {str(e)}")
         return None
 
-def run_transcription(audio_path, video_path, summary=False):
+def run_transcription(audio_path, video_path, summary=False, video_id=None):
     """
     Whisper-Faster를 사용하여 오디오 파일의 텍스트를 추출합니다.
 
@@ -148,6 +148,7 @@ def run_transcription(audio_path, video_path, summary=False):
         audio_path (str): 텍스트를 추출할 오디오 파일 경로.
         video_path (str): 원본 비디오 파일 경로.
         summary (bool): 텍스트 추출 후 요약을 실행할지 여부.
+        video_id (str): YouTube 비디오 ID.
     """
     try:
         # 스크립트의 현재 위치를 기준으로 whisper-faster.exe 경로 설정
@@ -181,7 +182,16 @@ def run_transcription(audio_path, video_path, summary=False):
 
             if summary:
                 print(f"{subtitle_path} 파일에 대한 요약 실행...")
-                summary_command = ['uv', 'run', 'aisummary.py', '--input', f"./{subtitle_path}"]
+                
+                output_filename = ""
+                if video_id:
+                    output_filename = f"./result/{video_id}.md"
+                else:
+                    # Fallback for local video files
+                    video_filename_without_ext = os.path.splitext(os.path.basename(video_path))[0]
+                    output_filename = f"./result/{video_filename_without_ext}.md"
+                
+                summary_command = ['uv', 'run', 'aisummary.py', '--input', f"./{subtitle_path}", '--model','gemini','--output', output_filename]
                 subprocess.run(summary_command, check=True)
         else:
             print(f"오류: 자막 파일을 찾을 수 없습니다 - {subtitle_path}")
@@ -261,7 +271,7 @@ def main():
         
         # 3. 텍스트 추출 (오디오 추출 성공 시)
         if audio_file:
-            run_transcription(audio_file, video_file_path, args.summary)
+            run_transcription(audio_file, video_file_path, args.summary, video_id=video_id)
 
 
 if __name__ == "__main__":
