@@ -5,11 +5,39 @@ import os
 import argparse
 import subprocess
 from ai.GeminiAI import GeminiAI
+import sys
+import threading
+import itertools
 
 # ollama_model_name="gpt-oss:20b"
 # system_prompt_file="./prompt/영상요약프롬프트.md"
 # prompt_file="./downloads/YC1V4EeX5Q8.srt"
 
+class Spinner:
+    def __init__(self, message="AI 요청중... ", delay=0.1):
+        self.spinner = itertools.cycle(['-', '/', '|', '\\'])
+        self.delay = delay
+        self.busy = False
+        self.spinner_thread = None
+        self.message = message
+
+    def spin(self):
+        while self.busy:
+            sys.stdout.write(f'\r{self.message}{next(self.spinner)}')
+            sys.stdout.flush()
+            time.sleep(self.delay)
+
+    def __enter__(self):
+        self.busy = True
+        self.spinner_thread = threading.Thread(target=self.spin)
+        self.spinner_thread.start()
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.busy = False
+        self.spinner_thread.join()
+        # Clear the line
+        sys.stdout.write('\r' + ' ' * (len(self.message) + 2) + '\r')
+        sys.stdout.flush()
 
 
 def chat(chatmsg, system_prompt="", model_name="gpt-oss:20b", temperature=0.5, use_gpu=True):
@@ -47,7 +75,7 @@ def chat(chatmsg, system_prompt="", model_name="gpt-oss:20b", temperature=0.5, u
         os.environ['CUDA_VISIBLE_DEVICES'] = '0'
         os.environ['OLLAMA_USE_GPU'] = '1'
         
-        print(f"Ollama 실행 모드: {'GPU' if use_gpu else 'CPU'}")
+        print(f"Ollama 실행 모드: {{'GPU' if use_gpu else 'CPU'}}")
 
         start_time = time.time()
         res = ollama.chat(
@@ -107,13 +135,13 @@ def main():
             user_prompt = f.read()
 
         # Get chat completion
-        print("AI 요청중...")
-        if args.model == 'ollama':
-            # --cpu 플래그가 있으면 GPU를 사용하지 않음 (use_gpu=False)
-            use_gpu = not args.cpu
-            response, response_time = chat(user_prompt, system_prompt, model_name=args.ollama_model_name, use_gpu=use_gpu)
-        else:
-            response, response_time = gemini(user_prompt, system_prompt, model_name=args.gemini_model_name)
+        with Spinner("AI 요청중... "):
+            if args.model == 'ollama':
+                # --cpu 플래그가 있으면 GPU를 사용하지 않음 (use_gpu=False)
+                use_gpu = not args.cpu
+                response, response_time = chat(user_prompt, system_prompt, model_name=args.ollama_model_name, use_gpu=use_gpu)
+            else:
+                response, response_time = gemini(user_prompt, system_prompt, model_name=args.gemini_model_name)
         print(f"응답 시간: {response_time:.2f}초")
 
         # Save result to file
