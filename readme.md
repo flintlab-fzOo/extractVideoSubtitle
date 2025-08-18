@@ -36,8 +36,6 @@
 ### 유튜브 영상
  - 자막 추출 실행
 ```
-$ export PYTHONIOENCODING=utf-8
-
 $ uv run extractVideoSubtitle.py --youtube e9S9Ai21wWo > logs/e9S9Ai21wWo.log
 or
 $ uv run extractVideoSubtitle.py --youtube https://www.youtube.com/watch?v=e9S9Ai21wWo > logs/e9S9Ai21wWo.log

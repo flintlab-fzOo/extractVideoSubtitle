@@ -13,7 +13,7 @@ import itertools
 # system_prompt_file="./prompt/영상요약프롬프트.md"
 # prompt_file="./downloads/YC1V4EeX5Q8.srt"
 
-os.environ['PYTHONIOENCODING'] =  'utf-8'
+# os.environ['PYTHONIOENCODING'] =  'utf-8'
 
 class Spinner:
     def __init__(self, message="AI 요청중... ", delay=0.1):

@@ -8,7 +8,7 @@ import ffmpeg
 # .env 파일에서 환경 변수 로드
 load_dotenv(verbose=True)
 
-os.environ['PYTHONIOENCODING'] = 'utf-8'
+# os.environ['PYTHONIOENCODING'] = 'utf-8'
 
 def get_download_formats(target_quality):
     """
