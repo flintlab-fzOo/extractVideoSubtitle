@@ -155,7 +155,7 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
         print(f"오류 발생: {str(e)}")
         return None
 
-def run_transcription(audio_path, video_path, summary=False, video_id=None):
+def run_transcription(audio_path, video_path, summary=False, system_prompt="./prompt/영상요약프롬프트.md", video_id=None):
     """
     Whisper-Faster를 사용하여 오디오 파일의 텍스트를 추출합니다.
 
@@ -207,7 +207,7 @@ def run_transcription(audio_path, video_path, summary=False, video_id=None):
                     video_filename_without_ext = os.path.splitext(os.path.basename(video_path))[0]
                     output_filename = f"./result/{video_filename_without_ext}.md"
                 
-                summary_command = ['uv', 'run', 'aisummary.py', '--input', f"./{subtitle_path}", '--model','gemini','--output', output_filename]
+                summary_command = ['uv', 'run', 'aisummary.py', '--system_prompt',system_prompt, '--input', f"./{subtitle_path}", '--model','gemini','--output', output_filename]
                 subprocess.run(summary_command, check=True)
         else:
             print(f"오류: 자막 파일을 찾을 수 없습니다 - {subtitle_path}")
@@ -251,6 +251,7 @@ def main():
         action='store_true',
         help="자막 추출 후 AI 요약을 실행합니다."
     )
+    parser.add_argument("--system_prompt", default="./prompt/영상요약프롬프트.md", help="Path to the system prompt file.")
     
     args = parser.parse_args()
     
@@ -287,7 +288,7 @@ def main():
         
         # 3. 텍스트 추출 (오디오 추출 성공 시)
         if audio_file:
-            run_transcription(audio_file, video_file_path, args.summary, video_id=video_id)
+            run_transcription(audio_file, video_file_path, args.summary, system_prompt=args.system_prompt, video_id=video_id)
 
 
 if __name__ == "__main__":
