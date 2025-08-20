@@ -63,7 +63,7 @@ $ uv run extractVideoSubtitle.py --download e9S9Ai21wWo --quality 1080p
 
 ### 유튜브 영상 요약
 ```
-$ uv run extractVideoSubtitle.py --youtube e9S9Ai21wWo --summary
+$ uv run extractVideoSubtitle.py --summary --youtube e9S9Ai21wWo
 ```
 
 ### 로컬 영상 파일 요약

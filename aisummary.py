@@ -94,7 +94,7 @@ def chat(chatmsg, system_prompt="", model_name="gpt-oss:20b", temperature=0.5, u
     except Exception as e:
         return f"오류 발생: {e}", 0
 
-def gemini(chatmsg,system_prompt="", model_name="gemini-2.5-pro",temperature=0.5):
+def gemini(chatmsg,system_prompt="", model_name="gemini-2.5-flash",temperature=0.5):
     try:
         start_time = time.time()
         
@@ -120,7 +120,7 @@ def main():
     parser.add_argument("--output", default="./result/result.md", help="Path to the output file.")
     parser.add_argument("--model", default="gemini", help="AI model to use ('ollama' or 'gemini').")
     parser.add_argument("--ollama_model_name", default="gpt-oss:20b", help="Ollama model name to use.")
-    parser.add_argument("--gemini_model_name", default="gemini-2.5-pro", help="Gemini model name to use.")
+    parser.add_argument("--gemini_model_name", default="gemini-2.5-flash", help="Gemini model name to use.")
     parser.add_argument("--cpu", action='store_true', help="Force CPU usage for Ollama.")
     
     args = parser.parse_args()
