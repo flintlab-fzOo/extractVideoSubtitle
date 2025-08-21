@@ -36,6 +36,8 @@
 ### 유튜브 영상
  - 자막 추출 실행
 ```
+$ export PYTHONIOENCODING=utf-8
+
 $ uv run extractVideoSubtitle.py --youtube e9S9Ai21wWo > logs/e9S9Ai21wWo.log
 or
 $ uv run extractVideoSubtitle.py --youtube https://www.youtube.com/watch?v=e9S9Ai21wWo > logs/e9S9Ai21wWo.log
@@ -45,6 +47,7 @@ $ tail -f logs/e9S9Ai21wWo.log
 
 ### 영상 파일
 ```
+$ export PYTHONIOENCODING=utf-8
 $ uv run extractVideoSubtitle.py --video "downloads/\[날씨\] 다시 전국 대부분 폭염 특보…곳곳에 소나기 ⧸ KBS  2025.08.05. \[S_TzW8DkCyE\].mkv"
 ```
 
@@ -52,6 +55,7 @@ $ uv run extractVideoSubtitle.py --video "downloads/\[날씨\] 다시 전국 대
  - 영상만 다운로드하고 자막추출은 하지 않습니다.
  - quality 옵션으로 화질을 선택할 수 있습니다.(기본값 720p)
 ```
+$ export PYTHONIOENCODING=utf-8
 $ uv run extractVideoSubtitle.py --download e9S9Ai21wWo --quality 1080p
 ```
 
@@ -63,11 +67,13 @@ $ uv run extractVideoSubtitle.py --download e9S9Ai21wWo --quality 1080p
 
 ### 유튜브 영상 요약
 ```
+$ export PYTHONIOENCODING=utf-8
 $ uv run extractVideoSubtitle.py --summary --youtube e9S9Ai21wWo > logs/summary.log
 ```
 
 ### 로컬 영상 파일 요약
 ```
+$ export PYTHONIOENCODING=utf-8
 $ uv run extractVideoSubtitle.py --summary --video "downloads/\[날씨\] 다시 전국 대부분 폭염 특보…곳곳에 소나기 KBS  2025.08.05. \[S_TzW8DkCyE\].mkv"
 ```
 

@@ -10,7 +10,7 @@ import threading
 import itertools
 
 # ollama_model_name="gpt-oss:20b"
-# system_prompt_file="./prompt/영상요약프롬프트.md"
+# system_prompt_file="./prompt/내용정리프롬프트.md"
 # prompt_file="./downloads/YC1V4EeX5Q8.srt"
 
 # os.environ['PYTHONIOENCODING'] =  'utf-8'
@@ -116,7 +116,7 @@ def gemini(chatmsg,system_prompt="", model_name="gemini-2.5-flash",temperature=0
 def main():
     parser = argparse.ArgumentParser(description="AI Chat using Ollama or Gemini.")
     parser.add_argument("--input", required=True, help="Path to the input file (e.g., subtitle file).")
-    parser.add_argument("--system_prompt", default="./prompt/영상요약프롬프트.md", help="Path to the system prompt file.")
+    parser.add_argument("--system_prompt", default="./prompt/내용정리프롬프트.md", help="Path to the system prompt file.")
     parser.add_argument("--output", default="./result/result.md", help="Path to the output file.")
     parser.add_argument("--model", default="gemini", help="AI model to use ('ollama' or 'gemini').")
     parser.add_argument("--ollama_model_name", default="gpt-oss:20b", help="Ollama model name to use.")
