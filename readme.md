@@ -63,12 +63,17 @@ $ uv run extractVideoSubtitle.py --download e9S9Ai21wWo --quality 1080p
 
 ### 유튜브 영상 요약
 ```
-$ uv run extractVideoSubtitle.py --summary --youtube e9S9Ai21wWo
+$ uv run extractVideoSubtitle.py --summary --youtube e9S9Ai21wWo > logs/summary.log
 ```
 
 ### 로컬 영상 파일 요약
 ```
-$ uv run extractVideoSubtitle.py --video "downloads/\[날씨\] 다시 전국 대부분 폭염 특보…곳곳에 소나기 ⧸ KBS  2025.08.05. \[S_TzW8DkCyE\].mkv" --summary
+$ uv run extractVideoSubtitle.py --summary --video "downloads/\[날씨\] 다시 전국 대부분 폭염 특보…곳곳에 소나기 KBS  2025.08.05. \[S_TzW8DkCyE\].mkv"
+```
+
+### 자막파일로 요약
+```
+$ uv run aisummary.py --input downloads/S_TzW8DkCyE.srt --output result/S_TzW8DkCyE.md
 ```
 
 ### (Ollama 사용 시) CPU로 요약 실행
