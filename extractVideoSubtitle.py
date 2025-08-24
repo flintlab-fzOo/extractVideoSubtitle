@@ -15,7 +15,7 @@ def get_download_formats(target_quality):
     주어진 화질에 맞는 YouTube 다운로드 포맷 문자열을 반환합니다.
     
     Args:
-        target_quality (str): 원하는 화질 (예: '2160p', '1080p', '720p' 등)
+        target_quality (str): 원하는 화질 (예: '2160p', '1080p', '720p', '480p', '360p', '240p', '144p')
         
     Returns:
         str: yt-dlp 포맷 문자열
@@ -27,6 +27,8 @@ def get_download_formats(target_quality):
         '720p': 'bestvideo[height<=720]+bestaudio/best[height<=720]',
         '480p': 'bestvideo[height<=480]+bestaudio/best[height<=480]',
         '360p': 'bestvideo[height<=360]+bestaudio/best[height<=360]',
+        '240p': 'bestvideo[height<=240]+bestaudio/best[height<=240]',
+        '144p': 'bestvideo[height<=144]+bestaudio/best[height<=144]',
     }
     
     # 지정된 화질이 quality_formats 딕셔너리에 없으면 기본값 반환
