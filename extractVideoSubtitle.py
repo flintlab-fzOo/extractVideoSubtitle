@@ -247,7 +247,7 @@ def main():
     parser.add_argument(
         "--quality", 
         default=None, 
-        help="YouTube 다운로드 시 사용할 비디오 화질 (예: 1080p, 720p 등). 기본값: --youtube(360p), --download(720p)"
+        help="YouTube 다운로드 시 사용할 비디오 화질 (예: 1080p, 720p 등). 기본값: --youtube(144p), --download(720p)"
     )
     parser.add_argument(
         "--summary",
@@ -268,7 +268,7 @@ def main():
         return
     elif args.youtube:
         if quality is None:
-            quality = "360p"
+            quality = "144p"
         # 1. YouTube 비디오 다운로드
         video_file_path = download_youtube_video_cli(args.youtube, quality)
     elif args.video:
