@@ -4,6 +4,7 @@ import os
 import subprocess
 from dotenv import load_dotenv
 import ffmpeg
+from soop_downloader import download_soop_stream, download_soop_vod
 
 # .env 파일에서 환경 변수 로드
 load_dotenv(verbose=True)
@@ -120,14 +121,14 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
         # 파일 존재 여부 확인
         if video_id:
             for filename in os.listdir(output_path):
-                if f"[{video_id}]" in filename:
+                if f".{quality}[{video_id}]" in filename:
                     existing_file_path = os.path.join(output_path, filename)
                     print(f"이미 다운로드된 파일입니다: {existing_file_path}")
                     return existing_file_path
 
         # yt-dlp 옵션 설정
         ydl_opts = {
-            'outtmpl': os.path.join(output_path, '%(title)s [%(id)s].%(ext)s'),
+            'outtmpl': os.path.join(output_path, f'%(title)s.{quality}[%(id)s].%(ext)s'),
             'quiet': False,
             'no_warnings': False,
             'format': get_download_formats(quality),
@@ -155,6 +156,48 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
 
     except Exception as e:
         print(f"오류 발생: {str(e)}")
+        return None
+
+def download_soop_video_cli(soop_url, quality="360p", output_path=None):
+    """
+    SOOP 영상을 다운로드하고 파일 경로를 반환하는 CLI 함수
+
+    Parameters:
+        soop_url (str): SOOP 영상 URL (스트리밍 또는 VOD)
+        quality (str): 원하는 화질 (예: 'best', '1080p', '720p', '480p')
+        output_path (str): 저장할 경로 (기본값: 'downloads' 폴더)
+    
+    Returns:
+        str: 다운로드된 파일의 경로 또는 실패 시 None
+    """
+    try:
+        if output_path is None:
+            output_path = os.environ.get('YTDN_DIC_PATH', 'downloads')
+
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
+
+        # SOOP 다운로드 로직 (soop_downloader.py 참고)
+        downloaded_file_path = None
+        if "play.sooplive.co.kr" in soop_url:
+            print(f"SOOP 스트리밍 다운로드 시작: {soop_url} (화질: {quality})")
+            downloaded_file_path = download_soop_stream(soop_url, quality)
+        elif "vod.sooplive.co.kr" in soop_url:
+            print(f"SOOP VOD 다운로드 시작: {soop_url} (화질: {quality})")
+            downloaded_file_path = download_soop_vod(soop_url, quality)
+        else:
+            print(f"오류: 알 수 없는 SOOP URL 형식입니다: {soop_url}")
+            return None
+        
+        if not downloaded_file_path:
+            print("오류: SOOP 영상 다운로드에 실패했습니다.")
+            return None
+        
+        print(f"SOOP 다운로드 완료! -> {downloaded_file_path}")
+        return downloaded_file_path
+
+    except Exception as e:
+        print(f"SOOP 다운로드 중 오류 발생: {str(e)}")
         return None
 
 def run_transcription(audio_path, video_path, summary=False, system_prompt="./prompt/내용정리프롬프트.md", video_id=None):
@@ -243,6 +286,10 @@ def main():
         "--download",
         help="YouTube 비디오를 다운로드만 실행."
     )
+    group.add_argument(
+        "--soop",
+        help="다운로드할 SOOP 영상 URL (스트리밍 또는 VOD). (오디오/자막 추출 실행)"
+    )
     
     parser.add_argument(
         "--quality", 
@@ -271,6 +318,11 @@ def main():
             quality = "144p"
         # 1. YouTube 비디오 다운로드
         video_file_path = download_youtube_video_cli(args.youtube, quality)
+    elif args.soop:
+        if quality is None:
+            quality = "360p"
+        # 1. SOOP 비디오 다운로드
+        video_file_path = download_soop_video_cli(args.soop, quality)
     elif args.video:
         # 로컬 비디오 파일 사용
         if not os.path.exists(args.video):
@@ -286,7 +338,15 @@ def main():
             with YoutubeDL({'quiet': True, 'no_warnings': True}) as ydl:
                 info_dict = ydl.extract_info(args.youtube or args.download, download=False)
                 video_id = info_dict.get('id')
-        
+        elif args.soop and video_file_path:
+            # SOOP 비디오의 경우, 다운로드된 파일명에서 ID 추출
+            base_filename = os.path.basename(video_file_path)
+            # 파일명 형식: %(uploader)s_%(id)s.{quality}.%(ext)s 또는 %(title)s.{quality}.%(ext)s
+            # .quality.ext 부분을 제거하여 순수한 ID 부분만 남김
+            # 예: uploader_id.best.mp4 -> uploader_id
+            # 예: title.best.mp4 -> title
+            video_id = base_filename.rsplit('.', 2)[0] # 마지막 두 점(.)을 기준으로 분리하여 앞 부분 가져오기
+
         audio_file = extract_audio(video_file_path, video_id=video_id)
         
         # 3. 텍스트 추출 (오디오 추출 성공 시)
