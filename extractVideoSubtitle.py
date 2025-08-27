@@ -287,7 +287,7 @@ def main():
         help="YouTube 비디오를 다운로드만 실행."
     )
     group.add_argument(
-        "--soop",
+        "--soop_url",
         help="다운로드할 SOOP 영상 URL (스트리밍 또는 VOD). (오디오/자막 추출 실행)"
     )
     
@@ -318,11 +318,13 @@ def main():
             quality = "144p"
         # 1. YouTube 비디오 다운로드
         video_file_path = download_youtube_video_cli(args.youtube, quality)
-    elif args.soop:
-        if quality is None:
+    elif args.soop_url:
+        if quality is None and args.summary:
             quality = "360p"
+        elif quality is None:
+            quality = "720p"
         # 1. SOOP 비디오 다운로드
-        video_file_path = download_soop_video_cli(args.soop, quality)
+        video_file_path = download_soop_video_cli(args.soop_url, quality)
     elif args.video:
         # 로컬 비디오 파일 사용
         if not os.path.exists(args.video):
@@ -338,7 +340,7 @@ def main():
             with YoutubeDL({'quiet': True, 'no_warnings': True}) as ydl:
                 info_dict = ydl.extract_info(args.youtube or args.download, download=False)
                 video_id = info_dict.get('id')
-        elif args.soop and video_file_path:
+        elif args.soop_url and video_file_path:
             # SOOP 비디오의 경우, 다운로드된 파일명에서 ID 추출
             base_filename = os.path.basename(video_file_path)
             # 파일명 형식: %(uploader)s_%(id)s.{quality}.%(ext)s 또는 %(title)s.{quality}.%(ext)s
