@@ -32,7 +32,7 @@ def download_soop_stream(url):
 
     ydl_opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best', # 가능한 최상의 MP4 비디오 및 오디오, 없으면 최상
-        'outtmpl': '%(uploader)s_%(id)s.%(ext)s', # 출력 파일 이름 템플릿: 업로더_방송ID.확장자
+        'outtmpl': 'downloads/%(uploader)s_%(id)s.%(ext)s', # 출력 파일 이름 템플릿: 업로더_방송ID.확장자
         'noplaylist': True, # 단일 비디오만 다운로드 (플레이리스트 방지)
         'progress_hooks': [_progress_hook], # 진행 상황 출력 훅
         'merge_output_format': 'mp4', # 비디오와 오디오를 합칠 때 MP4 형식으로 병합
@@ -69,7 +69,7 @@ def download_soop_vod(url):
 
     ydl_opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best', # 가능한 최상의 MP4 비디오 및 오디오, 없으면 최상
-        'outtmpl': '%(title)s.%(ext)s', # 출력 파일 이름 템플릿: 제목.확장자
+        'outtmpl': 'downloads/%(title)s.%(ext)s', # 출력 파일 이름 템플릿: 제목.확장자
         'noplaylist': True, # 단일 비디오만 다운로드
         'progress_hooks': [_progress_hook], # 진행 상황 출력 훅
         'merge_output_format': 'mp4', # 비디오와 오디오를 합칠 때 MP4 형식으로 병합
