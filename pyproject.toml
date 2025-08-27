@@ -11,4 +11,5 @@ dependencies = [
     "google-generativeai>=0.8.5",
     "ollama>=0.5.3",
     "requests>=2.32.4",
+    "bs4>=0.0.2",
 ]
