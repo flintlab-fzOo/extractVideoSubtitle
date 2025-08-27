@@ -87,3 +87,19 @@ $ uv run aisummary.py --input downloads/S_TzW8DkCyE.srt --output result/S_TzW8Dk
 ```
 $ uv run aisummary.py --input "downloads/영상파일명.srt" --model ollama --cpu
 ```
+
+### 실행시(다운로드중) 403 발생시
+```
+[download] Got error: HTTP Error 403: Forbidden
+[download] Got error: HTTP Error 403: Forbidden
+[download] Got error: HTTP Error 403: Forbidden
+[download] Got error: HTTP Error 403: Forbidden
+[download] Got error: HTTP Error 403: Forbidden
+[download] Got error: HTTP Error 403: Forbidden
+[download] Got error: HTTP Error 403: Forbidden
+ERROR: [youtube] QUMx_Ttpn8M: Requested format is not available. Use --list-formats for a list of available forats
+```
+ - yt-dlp 라이브러리 업데이트
+```
+$ uv add --upgrade yt-dlp
+```
