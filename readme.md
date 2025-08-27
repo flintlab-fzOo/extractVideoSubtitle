@@ -1,4 +1,4 @@
-﻿# 영상 자막 추출
+# 영상 자막 추출
 ## 목적
  - 자막 없는 외국 영화 추출해서 AI로 번역 돌려서 번역된 자막 만들기위해
  - 유튜브 영상 추출해서 AI로 내용 요약해서 확인하기위해
@@ -102,4 +102,44 @@ ERROR: [youtube] QUMx_Ttpn8M: Requested format is not available. Use --list-form
  - yt-dlp 라이브러리 업데이트
 ```
 $ uv add --upgrade yt-dlp
+```
+
+## AI Chat 실행 (aichat.py)
+`aichat.py` 스크립트는 다양한 AI 모델(Ollama 또는 Gemini)을 사용하여 텍스트 프롬프트에 대한 응답을 생성합니다. 시스템 프롬프트와 사용자 프롬프트를 파일 또는 직접 텍스트로 제공할 수 있으며, 결과는 지정된 파일에 저장됩니다.
+
+### 사용법
+
+```bash
+uv run aichat.py [OPTIONS]
+```
+
+### 옵션
+
+*   `--output <파일 경로>`: AI 응답을 저장할 파일 경로. 기본값은 `./result/result.md`입니다.
+*   `--prompt <파일 경로 또는 텍스트>`: 사용자 프롬프트 파일 경로 또는 직접 입력할 텍스트.
+*   `--ref_prompt <파일 경로 또는 텍스트>`: 참조 정보로 사용될 프롬프트 파일 경로 또는 직접 입력할 텍스트. `--prompt`와 결합되어 "## 참고 정보 : {ref_prompt 내용} ## 요청 정보 : {prompt 내용}" 형식으로 AI에 전달됩니다.
+*   `--system_prompt <파일 경로 또는 텍스트>`: 시스템 프롬프트 파일 경로 또는 직접 입력할 텍스트.
+*   `--model <모델 종류>`: 사용할 AI 모델. `'ollama'` 또는 `'gemini'` (기본값: `gemini`).
+*   `--ollama_model_name <모델 이름>`: Ollama 모델을 사용할 경우 모델 이름 (기본값: `gpt-oss:20b`).
+*   `--gemini_model_name <모델 이름>`: Gemini 모델을 사용할 경우 모델 이름 (기본값: `gemini-2.5-flash`).
+*   `--cpu`: Ollama 사용 시 GPU 대신 CPU를 강제로 사용합니다.
+
+### 예시
+
+#### 1. Gemini 모델을 사용하여 프롬프트 파일로 채팅
+
+```bash
+uv run aichat.py --prompt ./prompt/test.md --output ./result/my_gemini_response.md --model gemini --gemini_model_name gemini-2.5-flash
+```
+
+#### 2. Ollama 모델을 사용하여 직접 텍스트 프롬프트와 시스템 프롬프트 파일로 채팅 (CPU 사용)
+
+```bash
+uv run aichat.py --prompt "오늘 날씨는 어때?" --system_prompt "./prompt/weather_system_prompt.md" --model ollama --ollama_model_name llama2 --cpu --output ./result/weather_report.md
+```
+
+#### 3. 참조 프롬프트와 사용자 프롬프트 파일을 함께 사용하여 Gemini 모델로 채팅
+
+```bash
+uv run aichat.py --prompt "./prompt/main_request.md" --ref_prompt "./prompt/reference_data.md" --output ./result/combined_response.md
 ```
