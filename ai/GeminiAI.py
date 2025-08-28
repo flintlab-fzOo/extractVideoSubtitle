@@ -41,7 +41,7 @@ class GeminiAI:
 
     def chat(self, prompt, model_name=None, system_instruction=None, generation_config=None):
         if model_name == None:
-            model_name = "gemini-2.5-flash-preview-04-17"
+            model_name = "gemini-2.5-flash"
         
         safety_settings = {
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,

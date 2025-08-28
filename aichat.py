@@ -98,8 +98,7 @@ def chat(chatmsg, system_prompt="", model_name="gpt-oss:20b", temperature=0.5, u
 def gemini(chatmsg,system_prompt="", model_name="gemini-2.5-flash",temperature=0.5):
     try:
         start_time = time.time()
-        # print(f"gemini chat : system_prompt:{system_prompt}, chatmsg : {chatmsg}")
-        print(f"model_name:{model_name}, system_prompt:{system_prompt}, chatmsg:{chatmsg}")
+        # print(f"model_name:{model_name}, system_prompt:{system_prompt}, chatmsg:{chatmsg}")
         geminiai = GeminiAI()
         res = geminiai.chat(
             model_name=model_name,
