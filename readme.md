@@ -67,6 +67,8 @@ $ uv run extractVideoSubtitle.py --download e9S9Ai21wWo --quality 1080p
 
 ### 유튜브 영상 요약
 ```
+$ cd shell; ./genSubtitle.sh https://www.youtube.com/watch?v=BFvccj6QXfQ; cd ..
+or
 $ export PYTHONIOENCODING=utf-8
 $ uv run extractVideoSubtitle.py --summary --youtube e9S9Ai21wWo > logs/summary.log
 ```
