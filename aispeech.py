@@ -64,7 +64,7 @@ def _read_or_use_text(input_string):
             return f.read()
     return input_string
 
-def speech(message, output_file, lang='ko', speech_mode='man'):
+def speech(message, output_file, lang='ko', speech_mode='man', audio_save=False):
     """
     텍스트를 음성으로 변환하여 파일로 저장합니다.
     """
@@ -103,8 +103,9 @@ def speech(message, output_file, lang='ko', speech_mode='man'):
             else:
                 print(f"Warning: No specific voice found for lang='{lang}' and speech_mode='{speech_mode}'. Using default voice.")
 
-            # engine.save_to_file(message, output_file)
-            # print(f"음성 파일이 '{output_file}'에 저장되었습니다.")
+            if audio_save:
+                engine.save_to_file(message, output_file)
+                print(f"음성 파일이 '{output_file}'에 저장되었습니다.")
         # play_audio(output_file)
         with Spinner("오디오 재생중... "):
             engine.say(message)
@@ -145,6 +146,11 @@ def main():
         help="음성으로 변환할 텍스트 또는 텍스트 파일 경로입니다."
     )
     
+    parser.add_argument(
+        "--audiosave",
+        action='store_true',
+        help="음성파일 저장여부"
+    )
     parser.add_argument("--filter-mode", default="text", help="텍스트 처리 모드: 'text' (입력 텍스트 그대로 사용) 또는 'ai' (AI를 사용하여 텍스트 요약 후 사용).")
     parser.add_argument("--speech-mode", default="man", help="음성 변환 모드 (현재는 'man'만 지원).")
     parser.add_argument("--output", default="./result/speech.mp3", help="생성될 음성 파일의 경로 및 이름입니다.")
@@ -177,7 +183,7 @@ def main():
     if result_message:
         print(f"Result message prepared: {result_message}")
         print(f"Calling speech function with output file: {args.output}, speech_mode: {args.speech_mode}")
-        speech(result_message, args.output, speech_mode=args.speech_mode)
+        speech(result_message, args.output, speech_mode=args.speech_mode, audio_save=args.audiosave)
 
 if __name__ == "__main__":
     main()
