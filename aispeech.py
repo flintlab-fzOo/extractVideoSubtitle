@@ -4,7 +4,7 @@ import time
 import threading
 import itertools
 import argparse
-from gtts import gTTS
+import pyttsx3
 import subprocess
 from pydub import AudioSegment
 from ai.GeminiAI import GeminiAI
@@ -69,21 +69,54 @@ def speech(message, output_file, lang='ko', speech_mode='man'):
     텍스트를 음성으로 변환하여 파일로 저장합니다.
     """
     try:
-        print(f"Attempting to convert text to speech and save to: '{output_file}'")
-        with Spinner("오디오 파일 생성중... "):
-            tts = gTTS(text=message, lang=lang)
-            tts.save(output_file)
-        print(f"음성 파일이 '{output_file}'에 저장되었습니다.")
-        play_audio(output_file)
+        print(f"Attempting to convert text to speech and save to: '{output_file}' using pyttsx3")
+        engine = pyttsx3.init()
+        with Spinner("오디오 생성중... "):
+            # Set language/voice based on lang and speech_mode
+            voices = engine.getProperty('voices')
+            selected_voice = None
+            # for voice in voices:
+            #     print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {voice.name}")
+            for voice in voices:
+                # Attempt to find a Korean voice, and optionally a male voice
+                # pyttsx3 voice.languages is a list of language codes, e.g., ['en-US']
+                # voice.id often contains more detailed info, e.g., 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_KO-KR_HEAMI_11.0'
+                # We need to check if 'ko' is in voice.languages or voice.id
+                if any(l.startswith(lang) for l in voice.languages) or lang in voice.id.lower():
+                    if speech_mode == 'man' and 'male' in voice.name.lower():
+                        selected_voice = voice.id
+                        break
+                    elif speech_mode == 'woman' and 'female' in voice.name.lower():
+                        selected_voice = voice.id
+                        break
+                    elif speech_mode == 'default':
+                        selected_voice = voice.id
+                        break
+                # Fallback for general Korean voice if specific gender not found or not requested
+                if selected_voice is None and (any(l.startswith(lang) for l in voice.languages) or lang in voice.id.lower()):
+                    selected_voice = voice.id
+
+            if selected_voice:
+                engine.setProperty('voice', selected_voice)
+                engine.setProperty('volume', 1.0)  # Max volume
+                print(f"Using voice: {engine.getProperty('voice')}")
+            else:
+                print(f"Warning: No specific voice found for lang='{lang}' and speech_mode='{speech_mode}'. Using default voice.")
+
+            # engine.save_to_file(message, output_file)
+            # print(f"음성 파일이 '{output_file}'에 저장되었습니다.")
+        # play_audio(output_file)
+        with Spinner("오디오 재생중... "):
+            engine.say(message)
+            engine.runAndWait()
     except Exception as e:
         print(f"음성 변환 중 오류 발생: {e}")
         import traceback
         traceback.print_exc() # Print full traceback for debugging
 
+    """
 def play_audio(file_path):
-    """
     지정된 음성 파일을 재생합니다.
-    """
     try:
         print(f"음성 파일 재생: '{file_path}' using ffplay")
         # Ensure ffplay is installed and in PATH
@@ -96,6 +129,7 @@ def play_audio(file_path):
         print(f"음성 파일 재생 중 오류 발생: {e}")
         import traceback
         traceback.print_exc()
+"""
 
 def main():
     print("Script started: Entering main function.")
@@ -146,7 +180,5 @@ def main():
         speech(result_message, args.output, speech_mode=args.speech_mode)
 
 if __name__ == "__main__":
-    print("Before main function call.")
-    print("Inside if __name__ == \"__main__\" block.")
     main()
         
