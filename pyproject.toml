@@ -12,4 +12,6 @@ dependencies = [
     "ollama>=0.5.3",
     "requests>=2.32.4",
     "bs4>=0.0.2",
+    "gtts>=2.5.4",
+    "pydub>=0.25.1",
 ]

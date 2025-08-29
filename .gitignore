@@ -16,3 +16,5 @@ logs
 *.pyc
 *.tmp
 desktop.ini
+python.egg-info/*
+result/*
