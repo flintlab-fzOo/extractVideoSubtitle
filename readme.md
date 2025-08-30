@@ -25,6 +25,11 @@
 
 
 ## 실행(영상 자막파일 생성)
+### shell실행
+```
+$ cd shell; ./genSubtitle.sh https://www.toutube.com/watch?v=[videoid]; cd ..
+```
+
 ### 프로세스
  - 1-1. youtube 파라미터로 유튜브 videoId,url 값이 넘어온경우
 	 - 영상 다운로드(기본값 480p 화질 다운로드)
