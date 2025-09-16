@@ -24,7 +24,7 @@ def _progress_hook(d):
     elif d['status'] == 'error':
         print(f"\n다운로드 중 오류 발생: {d.get('filename', 'N/A')}")
 
-def download_soop_stream(url, quality="best"):
+def download_soop_stream(url, quality="best", username=None, password=None):
     """
     SOOP 라이브 스트림을 다운로드합니다.
     """
@@ -50,6 +50,10 @@ def download_soop_stream(url, quality="best"):
         'wait_for_video': 60, # 비디오가 시작될 때까지 최대 60초 기다림 (라이브용)
     }
 
+    if username and password:
+        ydl_opts['username'] = username
+        ydl_opts['password'] = password
+
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             # 다운로드 전에 비디오 정보를 미리 추출하여 제목/업로더 확인
@@ -64,6 +68,7 @@ def download_soop_stream(url, quality="best"):
             downloaded_file_path = ydl.prepare_filename(info)
             print(f"\n'{title}' 스트리밍 다운로드가 성공적으로 완료되었습니다! -> {downloaded_file_path}")
             return downloaded_file_path
+
     except yt_dlp.utils.DownloadError as e:
         print(f"\n\n스트리밍 다운로드 중 오류 발생: {e}")
         print("yt-dlp가 이 URL을 처리하지 못했거나 네트워크 문제일 수 있습니다.")
@@ -71,7 +76,7 @@ def download_soop_stream(url, quality="best"):
     except Exception as e:
         print(f"\n\n예상치 못한 오류가 발생했습니다: {e}")
 
-def download_soop_vod(url, quality="best"):
+def download_soop_vod(url, quality="best", username=None, password=None):
     """
     SOOP VOD를 다운로드합니다.
     """
@@ -95,6 +100,10 @@ def download_soop_vod(url, quality="best"):
         'no_warnings': True, # 경고 메시지 비활성화
     }
 
+    if username and password:
+        ydl_opts['username'] = username
+        ydl_opts['password'] = password
+
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             # 다운로드 전에 비디오 정보를 미리 추출하여 제목 확인
@@ -108,6 +117,7 @@ def download_soop_vod(url, quality="best"):
             downloaded_file_path = ydl.prepare_filename(info)
             print(f"\n'{title}' VOD 다운로드가 성공적으로 완료되었습니다! -> {downloaded_file_path}")
             return downloaded_file_path
+
     except yt_dlp.utils.DownloadError as e:
         print(f"\n\nVOD 다운로드 중 오류 발생: {e}")
         print("yt-dlp가 이 URL을 처리하지 못했거나 네트워크 문제일 수 있습니다.")
@@ -119,15 +129,19 @@ def main():
     parser = argparse.ArgumentParser(description="SOOP (아프리카TV) 라이브 스트림 및 VOD 다운로더")
     parser.add_argument("--url", required=True, help="다운로드할 SOOP 영상 URL (스트리밍 또는 VOD)")
     parser.add_argument("--quality", default="360p", help="다운로드할 영상의 화질 (예: 'best', '1080p', '720p', '480p'). 기본값은 'best'.")
+    parser.add_argument("--username", help="SOOP 계정 사용자 이름 (구독자 전용 영상 다운로드 시 필요)")
+    parser.add_argument("--password", help="SOOP 계정 비밀번호 (구독자 전용 영상 다운로드 시 필요)")
     args = parser.parse_args()
 
     target_url = args.url
+    username = args.username
+    password = args.password
 
     # URL 패턴을 분석하여 스트리밍 또는 VOD를 구분
     if "play.sooplive.co.kr" in target_url:
-        download_soop_stream(target_url, args.quality)
+        download_soop_stream(target_url, args.quality, username, password)
     elif "vod.sooplive.co.kr" in target_url:
-        download_soop_vod(target_url, args.quality)
+        download_soop_vod(target_url, args.quality, username, password)
     else:
         print(f"오류: 알 수 없는 SOOP URL 형식입니다: {target_url}")
         print("지원되는 URL 형식:")
