@@ -139,7 +139,7 @@ def main():
     """
     
     parser.add_argument("--output", default="./result/result.md", help="Path to the output file.")
-    parser.add_argument("--prompt", default="./prompt/test.md", help="Path to the prompt file or direct text.")
+    parser.add_argument("--prompt", default="./prompt/prompt.md", help="Path to the prompt file or direct text.")
     parser.add_argument("--ref_prompt", default="", help="Path to the prompt file or direct text.")
     parser.add_argument("--system_prompt", default="", help="Path to the system prompt file or direct text.")
     parser.add_argument("--model", default="gemini", help="AI model to use ('ollama' or 'gemini').")

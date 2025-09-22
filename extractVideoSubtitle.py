@@ -66,7 +66,7 @@ def extract_audio(video_path, output_path=None, video_id=None):
         print(f"오디오 추출 시작: {video_path} -> {output_path}")
         
         # ffmpeg를 사용하여 오디오 추출
-        ffmpeg.input(video_path).output(output_path, acodec='libmp3lame').run(overwrite_output=True, quiet=True)
+        ffmpeg.input(video_path).output(output_path, f='mp3').run(overwrite_output=True, quiet=True)
         """
         # 오디오 파일 유효성 검사 (길이 확인)
         try:
