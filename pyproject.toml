@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "dotenv>=0.9.9",
     "ffmpeg-python>=0.2.0",
-    "yt-dlp>=2025.7.21",
+    "yt-dlp>=2025.9.23",
     "google-generativeai>=0.8.5",
     "ollama>=0.5.3",
     "requests>=2.32.4",

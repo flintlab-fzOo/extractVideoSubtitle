@@ -109,6 +109,8 @@ ERROR: [youtube] QUMx_Ttpn8M: Requested format is not available. Use --list-form
  - yt-dlp 라이브러리 업데이트
 ```
 $ uv add --upgrade yt-dlp
+or
+$ uv pip install --upgrade yt-dlp
 ```
 
 ## AI Chat 실행 (aichat.py)

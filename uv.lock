@@ -3196,7 +3196,7 @@ requires-dist = [
     { name = "pydub", specifier = ">=0.25.1" },
     { name = "pyttsx3", specifier = ">=2.90" },
     { name = "requests", specifier = ">=2.32.4" },
-    { name = "yt-dlp", specifier = ">=2025.7.21" },
+    { name = "yt-dlp", specifier = ">=2025.9.23" },
 ]
 
 [[package]]
@@ -3337,9 +3337,9 @@ wheels = [
 
 [[package]]
 name = "yt-dlp"
-version = "2025.8.22"
+version = "2025.9.23"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/40/98/b077bebdc5c759a3f7af3ed3a2a5345ad1145c61963b476469b840ac84ce/yt_dlp-2025.8.22.tar.gz", hash = "sha256:d1846bbb7edbcd2a0d4a2d76c7a2124868de9ea3b3959a8cb8219e3f7cb5c335", size = 3037631, upload-time = "2025-08-23T00:07:02.939Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/90/77/24a13bbd3190849e7e37e6093aa9648f3b26a836d37ba67e3429ee89ad1d/yt_dlp-2025.9.23.tar.gz", hash = "sha256:9282ad1deadb4c90b2e6d3bcf9f360abf88c5f2e4ba836dad7b51387b086d757", size = 3036855, upload-time = "2025-09-23T06:54:46.174Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f4/06/e9e5e85969bd85142b004577915f33356ee0d5e20b79af8dd40b8bbfc96f/yt_dlp-2025.8.22-py3-none-any.whl", hash = "sha256:b8c71fe4516170dea60c6e5c54e2d45654693b8dc273cad060f22199476ec979", size = 3266783, upload-time = "2025-08-23T00:07:00.176Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/b7/723a4061d7efac4bbb86eddef9ceec0fc1e85415c7d665c2e5e1879759bb/yt_dlp-2025.9.23-py3-none-any.whl", hash = "sha256:84e36acf2dfbadb307d734a590dd937923173b13c57cf45a662f40c93e746302", size = 3241497, upload-time = "2025-09-23T06:54:43.485Z" },
 ]

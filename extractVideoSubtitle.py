@@ -22,14 +22,14 @@ def get_download_formats(target_quality):
         str: yt-dlp 포맷 문자열
     """
     quality_formats = {
-        '2160p': 'bestvideo[height<=2160]+bestaudio/best[height<=2160]',
-        '1440p': 'bestvideo[height<=1440]+bestaudio/best[height<=1440]',
-        '1080p': 'bestvideo[height<=1080]+bestaudio/best[height<=1080]',
-        '720p': 'bestvideo[height<=720]+bestaudio/best[height<=720]',
-        '480p': 'bestvideo[height<=480]+bestaudio/best[height<=480]',
-        '360p': 'bestvideo[height<=360]+bestaudio/best[height<=360]',
-        '240p': 'bestvideo[height<=240]+bestaudio/best[height<=240]',
-        '144p': 'bestvideo[height<=144]+bestaudio/best[height<=144]',
+        '2160p': 'bestvideo[height<=2160]+bestaudio/best[height<=2160]/best',
+        '1440p': 'bestvideo[height<=1440]+bestaudio/best[height<=1440]/best',
+        '1080p': 'bestvideo[height<=1080]+bestaudio/best[height<=1080]/best',
+        '720p': 'bestvideo[height<=720]+bestaudio/best[height<=720]/best',
+        '480p': 'bestvideo[height<=480]+bestaudio/best[height<=480]/best',
+        '360p': 'bestvideo[height<=360]+bestaudio/best[height<=360]/best',
+        '240p': 'bestvideo[height<=240]+bestaudio/best[height<=240]/best',
+        '144p': 'bestvideo[height<=144]+bestaudio/best[height<=144]/best',
     }
     
     # 지정된 화질이 quality_formats 딕셔너리에 없으면 기본값 반환
@@ -131,11 +131,15 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
             'outtmpl': os.path.join(output_path, f'%(title)s.{quality}[%(id)s].%(ext)s'),
             'quiet': False,
             'no_warnings': False,
-            'format': get_download_formats(quality),
             'merge_output_format': 'mkv',
         }
 
-        print(f"다운로드 시작: {video_url} (화질: {quality})")
+        if quality is None:
+            ydl_opts['format'] = 'best'
+        else:
+            ydl_opts['format'] = get_download_formats(quality)
+
+        print(f"다운로드 시작: {video_url} (화질: {quality if quality else 'best'})")
         print(f"저장 폴더: {os.path.abspath(output_path)}")
 
         with YoutubeDL(ydl_opts) as ydl:

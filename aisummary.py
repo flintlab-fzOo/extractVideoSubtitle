@@ -132,9 +132,14 @@ def main():
             system_prompt = f.read()
 
         # Read user prompt
-        with open(args.input, 'r', encoding='utf-8') as f:
-        # with open(prompt_file, 'r', encoding='utf-8') as f:
-            user_prompt = f.read()
+        user_prompt = ""
+        try:
+            with open(args.input, 'r', encoding='utf-8') as f:
+                user_prompt = f.read()
+        except UnicodeDecodeError:
+            print(f"경고: '{args.input}' 파일을 'utf-8'로 디코딩하는 데 실패했습니다. 'latin-1'으로 재시도합니다.")
+            with open(args.input, 'r', encoding='latin-1') as f:
+                user_prompt = f.read()
 
         # Get chat completion
         modelnm = args.ollama_model_name if args.model == 'ollama' else args.gemini_model_name
