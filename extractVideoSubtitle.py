@@ -132,7 +132,17 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
             'quiet': False,
             'no_warnings': False,
             'merge_output_format': 'mkv',
+            'http_headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            },
+            'extractor_args': {'youtube': {'player_client': ['web_embedded', 'web']}}
         }
+
+        # 환경 변수에서 프록시 설정 로드 (예: YTDN_PROXY="http://your_proxy_server:port")
+        proxy = os.environ.get('YTDN_PROXY')
+        if proxy:
+            ydl_opts['proxy'] = proxy
+            print(f"프록시 사용: {proxy}")
 
         if quality is None:
             ydl_opts['format'] = 'best'
