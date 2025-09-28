@@ -145,7 +145,7 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
             print(f"프록시 사용: {proxy}")
 
         if quality is None:
-            ydl_opts['format'] = 'best'
+            ydl_opts['format'] = '144p'
         else:
             ydl_opts['format'] = get_download_formats(quality)
 
