@@ -1,5 +1,5 @@
 import argparse
-from yt_dlp import YoutubeDL
+from yt_dlp import YoutubeDL, DownloadError
 import os
 import subprocess
 from dotenv import load_dotenv
@@ -104,73 +104,120 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
     Returns:
         str: 다운로드된 파일의 경로 또는 실패 시 None
     """
+    # 기본 저장 경로 설정 (환경 변수 YTDN_DIC_PATH 사용, 없으면 'downloads')
+    if output_path is None:
+        output_path = os.environ.get('YTDN_DIC_PATH', 'downloads')
+
+    # 저장 디렉토리가 없으면 생성
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
+    # 임시 ydl 인스턴스로 영상 ID만 조용히 가져오기
+    video_id = None
     try:
-        # 기본 저장 경로 설정 (환경 변수 YTDN_DIC_PATH 사용, 없으면 'downloads')
-        if output_path is None:
-            output_path = os.environ.get('YTDN_DIC_PATH', 'downloads')
-
-        # 저장 디렉토리가 없으면 생성
-        if not os.path.exists(output_path):
-            os.makedirs(output_path)
-
-        # 임시 ydl 인스턴스로 영상 ID만 조용히 가져오기
         with YoutubeDL({'quiet': True, 'no_warnings': True}) as ydl:
             info_dict = ydl.extract_info(video_url, download=False)
             video_id = info_dict.get('id')
+    except Exception as e:
+        print(f"비디오 정보 추출 중 오류 발생: {str(e)}")
+        return None
 
-        # 파일 존재 여부 확인
+    # 화질 재시도 리스트 (720p 실패 시 480p, 480p 실패 시 360p)
+    fallback_qualities = ['720p', '480p', '360p']
+    
+    # 현재 요청된 quality가 fallback_qualities에 없으면 추가
+    if quality and quality not in fallback_qualities:
+        # 현재 quality가 720p보다 높으면 720p부터 시작하도록 조정
+        # 간단하게 현재 quality를 리스트의 맨 앞에 추가하고 중복 제거
+        try:
+            if int(quality[:-1]) > 720: # '1080p' -> 1080
+                fallback_qualities.insert(0, quality)
+            else:
+                # 720p보다 낮거나 같은데 리스트에 없는 경우 (예: 240p)
+                # 해당 quality부터 시작하도록 리스트 재구성
+                current_quality_index = -1
+                for i, q in enumerate(fallback_qualities):
+                    if int(q[:-1]) <= int(quality[:-1]):
+                        current_quality_index = i
+                        break
+                if current_quality_index != -1:
+                    fallback_qualities = fallback_qualities[current_quality_index:]
+                else:
+                    fallback_qualities.insert(0, quality)
+        except ValueError: # quality가 'best' 등 숫자가 아닌 경우
+            fallback_qualities.insert(0, quality)
+    elif quality is None: # quality가 None인 경우 (기본값 720p로 시작)
+        quality = '720p'
+        
+    # 중복 제거 및 순서 유지
+    seen = set()
+    fallback_qualities = [q for q in fallback_qualities if not (q in seen or seen.add(q))]
+    
+    downloaded_file_path = None
+    for current_quality in fallback_qualities:
+        print(f"\n다운로드 시도: {video_url} (화질: {current_quality})")
+        
+        # 파일 존재 여부 확인 (현재 시도하는 화질로 이미 다운로드되었는지)
         if video_id:
             for filename in os.listdir(output_path):
-                if f".{quality}[{video_id}]" in filename:
+                if f".{current_quality}[{video_id}]" in filename:
                     existing_file_path = os.path.join(output_path, filename)
                     print(f"이미 다운로드된 파일입니다: {existing_file_path}")
                     return existing_file_path
 
-        # yt-dlp 옵션 설정
-        ydl_opts = {
-            'outtmpl': os.path.join(output_path, f'%(title)s.{quality}[%(id)s].%(ext)s'),
-            'quiet': False,
-            'no_warnings': False,
-            'merge_output_format': 'mkv',
-            'http_headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            },
-            'extractor_args': {'youtube': {'player_client': ['web_embedded', 'web']}}
-        }
+        try:
+            # yt-dlp 옵션 설정
+            ydl_opts = {
+                'outtmpl': os.path.join(output_path, f'%(title)s.{current_quality}[%(id)s].%(ext)s'),
+                'quiet': False,
+                'no_warnings': False,
+                'merge_output_format': 'mkv',
+                'http_headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                },
+                'extractor_args': {'youtube': {'player_client': ['web_embedded', 'web']}}
+            }
 
-        # 환경 변수에서 프록시 설정 로드 (예: YTDN_PROXY="http://your_proxy_server:port")
-        proxy = os.environ.get('YTDN_PROXY')
-        if proxy:
-            ydl_opts['proxy'] = proxy
-            print(f"프록시 사용: {proxy}")
+            # 환경 변수에서 프록시 설정 로드 (예: YTDN_PROXY="http://your_proxy_server:port")
+            proxy = os.environ.get('YTDN_PROXY')
+            if proxy:
+                ydl_opts['proxy'] = proxy
+                print(f"프록시 사용: {proxy}")
 
-        if quality is None:
-            ydl_opts['format'] = '144p'
-        else:
-            ydl_opts['format'] = get_download_formats(quality)
+            ydl_opts['format'] = get_download_formats(current_quality)
 
-        print(f"다운로드 시작: {video_url} (화질: {quality if quality else 'best'})")
-        print(f"저장 폴더: {os.path.abspath(output_path)}")
+            print(f"저장 폴더: {os.path.abspath(output_path)}")
 
-        with YoutubeDL(ydl_opts) as ydl:
-            # 다운로드 실행
-            ydl.download([video_url])
-            # 다운로드된 파일의 전체 경로 가져오기
-            downloaded_file_path = ydl.prepare_filename(info_dict)
+            with YoutubeDL(ydl_opts) as ydl:
+                # 다운로드 실행
+                ydl.download([video_url])
+                # 다운로드된 파일의 전체 경로 가져오기
+                downloaded_file_path = ydl.prepare_filename(info_dict)
+                
+                # prepare_filename이 실제 파일과 다를 수 있으므로, ID로 다시 한번 스캔하여 정확한 경로를 찾음
+                if not os.path.exists(downloaded_file_path):
+                    for filename in os.listdir(output_path):
+                        if f"[{video_id}]" in filename:
+                            downloaded_file_path = os.path.join(output_path, filename)
+                            break
             
-            # prepare_filename이 실제 파일과 다를 수 있으므로, ID로 다시 한번 스캔하여 정확한 경로를 찾음
-            if not os.path.exists(downloaded_file_path):
-                for filename in os.listdir(output_path):
-                    if f"[{video_id}]" in filename:
-                        downloaded_file_path = os.path.join(output_path, filename)
-                        break
+            if downloaded_file_path and os.path.exists(downloaded_file_path):
+                print(f"\n다운로드 완료! -> {downloaded_file_path}")
+                return downloaded_file_path # 성공 시 즉시 반환
 
-        print(f"\n다운로드 완료! -> {downloaded_file_path}")
-        return downloaded_file_path
-
-    except Exception as e:
-        print(f"오류 발생: {str(e)}")
-        return None
+        except DownloadError as e:
+            if "403" in str(e):
+                print(f"경고: 403 오류 발생. 화질을 낮춰 재시도합니다. ({current_quality} 실패)")
+            else:
+                print(f"다운로드 중 yt-dlp 오류 발생: {str(e)}")
+                # 403이 아닌 다른 다운로드 오류는 재시도하지 않고 종료
+                return None
+        except Exception as e:
+            print(f"다운로드 중 알 수 없는 오류 발생: {str(e)}")
+            return None
+    
+    print(f"오류: 모든 시도에서 비디오 다운로드에 실패했습니다: {video_url}")
+    return None
 
 def download_soop_video_cli(soop_url, quality="360p", output_path=None):
     """
