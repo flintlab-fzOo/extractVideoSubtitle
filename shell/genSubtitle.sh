@@ -6,4 +6,10 @@ if [ -z "$1" ]; then
 fi
 
 cd ..
-PYTHONIOENCODING=utf-8 uv run extractVideoSubtitle.py --summary --youtube "$1" > ./logs/summary.log
+
+QUALITY_OPTION=""
+if [ -n "$2" ]; then
+  QUALITY_OPTION="--quality $2"
+fi
+
+PYTHONIOENCODING=utf-8 uv run extractVideoSubtitle.py --summary --youtube "$1" $QUALITY_OPTION > ./logs/summary.log
