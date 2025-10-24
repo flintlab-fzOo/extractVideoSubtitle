@@ -14,26 +14,19 @@ load_dotenv(verbose=True)
 def get_download_formats(target_quality):
     """
     주어진 화질에 맞는 YouTube 다운로드 포맷 문자열을 반환합니다.
-    
-    Args:
-        target_quality (str): 원하는 화질 (예: '2160p', '1080p', '720p', '480p', '360p', '240p', '144p')
-        
-    Returns:
-        str: yt-dlp 포맷 문자열
+    yt-dlp가 가용한 프로토콜(HLS, DASH 등)을 자동으로 선택하도록 합니다.
     """
-    quality_formats = {
-        '2160p': 'bestvideo[height<=2160]+bestaudio/best[height<=2160]/best',
-        '1440p': 'bestvideo[height<=1440]+bestaudio/best[height<=1440]/best',
-        '1080p': 'bestvideo[height<=1080]+bestaudio/best[height<=1080]/best',
-        '720p': 'bestvideo[height<=720]+bestaudio/best[height<=720]/best',
-        '480p': 'bestvideo[height<=480]+bestaudio/best[height<=480]/best',
-        '360p': 'bestvideo[height<=360]+bestaudio/best[height<=360]/best',
-        '240p': 'bestvideo[height<=240]+bestaudio/best[height<=240]/best',
-        '144p': 'bestvideo[height<=144]+bestaudio/best[height<=144]/best',
+    quality_map = {
+        '2160p': 2160, '1440p': 1440, '1080p': 1080, '720p': 720,
+        '480p': 480, '360p': 360, '240p': 240, '144p': 144
     }
     
-    # 지정된 화질이 quality_formats 딕셔너리에 없으면 기본값 반환
-    return quality_formats.get(target_quality, 'bestvideo+bestaudio/best')
+    height = quality_map.get(target_quality)
+    if height:
+        # bv* = best video, ba = best audio, b = best (combined)
+        return f'bv*[height<={height}]+ba/b[height<={height}]'
+    
+    return 'bv*+ba/b'
 
 def extract_audio(video_path, output_path=None, video_id=None):
     """
@@ -157,15 +150,16 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
     for current_quality in fallback_qualities:
         print(f"\n다운로드 시도: {video_url} (화질: {current_quality})")
         
-        # 파일 존재 여부 확인 (현재 시도하는 화질로 이미 다운로드되었는지)
+        # 파일 존재 여부 확인
         if video_id:
             for filename in os.listdir(output_path):
-                if f".{current_quality}[{video_id}]" in filename:
+                if f"[{video_id}]" in filename:
                     existing_file_path = os.path.join(output_path, filename)
                     print(f"이미 다운로드된 파일입니다: {existing_file_path}")
                     return existing_file_path
 
         try:
+            
             # yt-dlp 옵션 설정
             ydl_opts = {
                 'outtmpl': os.path.join(output_path, f'%(title)s.{current_quality}[%(id)s].%(ext)s'),
@@ -177,7 +171,7 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
                 },
                 'extractor_args': {'youtube': {'player_client': ['web_embedded', 'web']}}
             }
-
+            
             # 환경 변수에서 프록시 설정 로드 (예: YTDN_PROXY="http://your_proxy_server:port")
             proxy = os.environ.get('YTDN_PROXY')
             if proxy:
@@ -185,8 +179,9 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
                 print(f"프록시 사용: {proxy}")
 
             ydl_opts['format'] = get_download_formats(current_quality)
-
+            
             print(f"저장 폴더: {os.path.abspath(output_path)}")
+
 
             with YoutubeDL(ydl_opts) as ydl:
                 # 다운로드 실행
@@ -204,18 +199,62 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
             if downloaded_file_path and os.path.exists(downloaded_file_path):
                 print(f"\n다운로드 완료! -> {downloaded_file_path}")
                 return downloaded_file_path # 성공 시 즉시 반환
+        except Exception as e:
+            print(f"다운로드 중 알 수 없는 오류 발생: {str(e)}")
 
-        except DownloadError as e:
-            if "403" in str(e):
-                print(f"경고: 403 오류 발생. 화질을 낮춰 재시도합니다. ({current_quality} 실패)")
+
+
+        try:
+            command = ['yt-dlp']
+            
+            # 여러 player client를 시도하도록 명시
+            command.extend(['--extractor-args', 'youtube:player_client=android,ios,web,tv_embedded'])
+            
+            title = info_dict.get('title', 'unknown_title')
+            invalid_chars = '\\/:*?"<>|'
+            for char in invalid_chars:
+                title = title.replace(char, '_')
+            video_id_for_filename = info_dict.get('id', 'unknown_id')
+
+            output_template = os.path.join(output_path, f"{title}[{video_id_for_filename}].mkv")
+            output_template = output_template.replace('\\','/')
+            command.extend(['-o', output_template])
+
+            command.extend(['--merge-output-format', 'mkv'])
+
+            proxy = os.environ.get('YTDN_PROXY')
+            if proxy:
+                command.extend(['--proxy', proxy])
+
+            command.append(video_url)
+
+            print(f"저장 폴더: {os.path.abspath(output_path)}")
+            print(f"yt-dlp CLI 명령 실행: {' '.join(command)}")
+
+            result = subprocess.run(command, check=True, capture_output=True, text=True, encoding='utf-8')
+            print(f"yt-dlp stdout: {result.stdout}")
+            
+            # 다운로드된 파일 찾기
+            downloaded_file_path = None
+            for filename in os.listdir(output_path):
+                if video_id and f"[{video_id}]" in filename:
+                    downloaded_file_path = os.path.join(output_path, filename)
+                    break
+            
+            if downloaded_file_path and os.path.exists(downloaded_file_path):
+                print(f"\n다운로드 완료! -> {downloaded_file_path}")
+                return downloaded_file_path
             else:
-                print(f"다운로드 중 yt-dlp 오류 발생: {str(e)}")
-                # 403이 아닌 다른 다운로드 오류는 재시도하지 않고 종료
+                print("오류: 다운로드된 파일을 찾을 수 없습니다.")
                 return None
+
+        except subprocess.CalledProcessError as e:
+            print(f"다운로드 중 오류 발생: {e.stderr + e.stdout}")
+            return None
         except Exception as e:
             print(f"다운로드 중 알 수 없는 오류 발생: {str(e)}")
             return None
-    
+
     print(f"오류: 모든 시도에서 비디오 다운로드에 실패했습니다: {video_url}")
     return None
 
