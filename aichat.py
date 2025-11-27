@@ -8,6 +8,7 @@ from ai.GeminiAI import GeminiAI
 import sys
 import threading
 import itertools
+from datetime import datetime
 
 # ollama_model_name="gpt-oss:20b"
 # system_prompt_file="./prompt/내용정리프롬프트.md"
@@ -138,13 +139,13 @@ def main():
     )
     """
     
-    parser.add_argument("--output", default="./result/result.md", help="Path to the output file.")
+    parser.add_argument("--output", default=os.path.join("./result", datetime.now().strftime("%Y%m%d%H%M%S") + ".md"), help="Path to the output file.")
     parser.add_argument("--prompt", default="./prompt/prompt.md", help="Path to the prompt file or direct text.")
     parser.add_argument("--ref_prompt", default="", help="Path to the prompt file or direct text.")
     parser.add_argument("--system_prompt", default="", help="Path to the system prompt file or direct text.")
     parser.add_argument("--model", default="gemini", help="AI model to use ('ollama' or 'gemini').")
     parser.add_argument("--ollama_model_name", default="gpt-oss:20b", help="Ollama model name to use.")
-    parser.add_argument("--gemini_model_name", default="gemini-2.5-flash", help="Gemini model name to use.")
+    parser.add_argument("--gemini_model_name", default="gemini-flash-latest", help="Gemini model name to use.")
     parser.add_argument("--cpu", action='store_true', help="Force CPU usage for Ollama.")
 
     args = parser.parse_args()

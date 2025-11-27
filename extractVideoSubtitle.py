@@ -3,8 +3,49 @@ from yt_dlp import YoutubeDL, DownloadError
 import os
 import subprocess
 from dotenv import load_dotenv
+import re
 import ffmpeg
 from soop_downloader import download_soop_stream, download_soop_vod
+
+def _progress_hook(d):
+    """yt-dlp 다운로드 진행 상황을 출력하는 훅."""
+    if d['status'] == 'downloading':
+        # 현재 다운로드 중인 파일명, 진행률, 예상 시간을 한 줄에 출력
+        # '\r'을 사용하여 줄바꿈 없이 업데이트합니다.
+        print(f"진행 상태: {d['status']} | 파일명: {os.path.basename(d.get('filename', 'N/A'))} | "
+              f"진행률: {d.get('_percent_str', 'N/A')} | 예상 시간: {d.get('_eta_str', 'N/A')}", end='\r')
+    elif d['status'] == 'finished':
+        print(f"\n다운로드 완료: {d.get('filename', 'N/A')}")
+    elif d['status'] == 'error':
+        print(f"\n다운로드 중 오류 발생: {d.get('filename', 'N/A')}")
+
+def check_ffmpeg_installation():
+    """
+    시스템에 FFmpeg가 설치되어 있고 PATH에 등록되어 있는지 확인합니다.
+    """
+    try:
+        subprocess.run(['ffmpeg', '-version'], check=True, capture_output=True, text=True, encoding='utf-8')
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+
+def sanitize_filename(filename):
+    """
+    파일명을 안전하게 정리합니다.
+    - 공백을 언더스코어(_)로 바꿉니다.
+    - 허용된 특수문자 ([, ], -, ., (, ))를 제외한 다른 특수문자를 언더스코어(_)로 바꿉니다.
+    """
+    # 파일 확장자를 분리합니다.
+    base, ext = os.path.splitext(filename)
+    
+    # 공백을 언더스코어로 바꿉니다.
+    sanitized_base = base.replace(' ', '_')
+    
+    # 허용된 특수문자 ([, ], -, (, ))를 제외한 모든 특수문자를 언더스코어로 바꿉니다.
+    # re.sub(r'[^\w\s\[\]\-\.]', '_', text) 여기서 \w는 영문 숫자 언더스코어
+    sanitized_base = re.sub(r'[^\w\[\]\-\(\).]', '_', sanitized_base)
+    
+    return f"{sanitized_base}{ext}"
 
 # .env 파일에서 환경 변수 로드
 load_dotenv(verbose=True)
@@ -41,6 +82,11 @@ def extract_audio(video_path, output_path=None, video_id=None):
         print(f"오류: 비디오 파일을 찾을 수 없습니다 - {video_path}")
         return None
 
+    if not check_ffmpeg_installation():
+        print("오류: FFmpeg가 설치되어 있지 않거나 PATH에 등록되어 있지 않습니다.")
+        print("FFmpeg를 설치하고 시스템 환경 변수 PATH에 추가해주세요.")
+        return None
+
     try:
         # 출력 파일 경로가 지정되지 않은 경우, 비디오 ID 또는 비디오와 같은 이름의 mp3 파일로 설정
         if output_path is None:
@@ -59,7 +105,7 @@ def extract_audio(video_path, output_path=None, video_id=None):
         print(f"오디오 추출 시작: {video_path} -> {output_path}")
         
         # ffmpeg를 사용하여 오디오 추출
-        ffmpeg.input(video_path).output(output_path, f='mp3').run(overwrite_output=True, quiet=True)
+        ffmpeg.input(video_path).output(output_path, f='mp3').run(overwrite_output=True)
         """
         # 오디오 파일 유효성 검사 (길이 확인)
         try:
@@ -111,8 +157,11 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
         with YoutubeDL({'quiet': True, 'no_warnings': True}) as ydl:
             info_dict = ydl.extract_info(video_url, download=False)
             video_id = info_dict.get('id')
+    except DownloadError as e:
+        print(f"오류: YouTube 비디오 정보 추출에 실패했습니다. (URL 확인 또는 비디오가 존재하는지 확인): {e}")
+        return None
     except Exception as e:
-        print(f"비디오 정보 추출 중 오류 발생: {str(e)}")
+        print(f"비디오 정보 추출 중 알 수 없는 오류 발생: {str(e)}")
         return None
 
     # 화질 재시도 리스트 (720p 실패 시 480p, 480p 실패 시 360p)
@@ -163,13 +212,15 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
             # yt-dlp 옵션 설정
             ydl_opts = {
                 'outtmpl': os.path.join(output_path, f'%(title)s.{current_quality}[%(id)s].%(ext)s'),
+                # 'restrictfilenames': True,
                 'quiet': False,
                 'no_warnings': False,
                 'merge_output_format': 'mkv',
                 'http_headers': {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
                 },
-                'extractor_args': {'youtube': {'player_client': ['web_embedded', 'web']}}
+                'extractor_args': {'youtube': {'player_client': ['web_embedded', 'web']}},
+                'progress_hooks': [_progress_hook]
             }
             
             # 환경 변수에서 프록시 설정 로드 (예: YTDN_PROXY="http://your_proxy_server:port")
@@ -198,6 +249,15 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
             
             if downloaded_file_path and os.path.exists(downloaded_file_path):
                 print(f"\n다운로드 완료! -> {downloaded_file_path}")
+                # TODO : 다운로드 파일명을 빈공간(스페이스), 특수문자([,],- 제외)를 _로 변환해주세요
+                old_file_path = downloaded_file_path
+                sanitized_filename = sanitize_filename(os.path.basename(downloaded_file_path))
+                new_file_path = os.path.join(output_path, sanitized_filename)
+                
+                if old_file_path != new_file_path:
+                    os.rename(old_file_path, new_file_path)
+                    print(f"파일명 변경: {os.path.basename(old_file_path)} -> {sanitized_filename}")
+                    downloaded_file_path = new_file_path
                 return downloaded_file_path # 성공 시 즉시 반환
         except Exception as e:
             print(f"다운로드 중 알 수 없는 오류 발생: {str(e)}")
@@ -210,13 +270,18 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
             # 여러 player client를 시도하도록 명시
             command.extend(['--extractor-args', 'youtube:player_client=android,ios,web,tv_embedded'])
             
-            title = info_dict.get('title', 'unknown_title')
-            invalid_chars = '\\/:*?"<>|'
-            for char in invalid_chars:
-                title = title.replace(char, '_')
-            video_id_for_filename = info_dict.get('id', 'unknown_id')
+            # title = info_dict.get('title', 'unknown_title')
+            # invalid_chars = '\\/:*?"<>|'
+            # for char in invalid_chars:
+            #     title = title.replace(char, '_')
+            # video_id_for_filename = info_dict.get('id', 'unknown_id')
 
-            output_template = os.path.join(output_path, f"{title}[{video_id_for_filename}].mkv")
+            # output_template = os.path.join(output_path, f"{title}[{video_id_for_filename}].mkv")
+            # output_template = output_template.replace('\\','/')
+            # command.extend(['-o', output_template])
+
+            # command.append('--restrict-filenames')
+            output_template = os.path.join(output_path, f'%(title)s.{current_quality}[%(id)s].%(ext)s')
             output_template = output_template.replace('\\','/')
             command.extend(['-o', output_template])
 
@@ -242,6 +307,15 @@ def download_youtube_video_cli(video_url, quality='720p', output_path=None):
                     break
             
             if downloaded_file_path and os.path.exists(downloaded_file_path):
+                # TODO : 다운로드 파일명을 빈공간(스페이스), 특수문자([,],- 제외)를 _로 변환해주세요
+                old_file_path = downloaded_file_path
+                sanitized_filename = sanitize_filename(os.path.basename(downloaded_file_path))
+                new_file_path = os.path.join(output_path, sanitized_filename)
+                
+                if old_file_path != new_file_path:
+                    os.rename(old_file_path, new_file_path)
+                    print(f"파일명 변경: {os.path.basename(old_file_path)} -> {sanitized_filename}")
+                    downloaded_file_path = new_file_path
                 print(f"\n다운로드 완료! -> {downloaded_file_path}")
                 return downloaded_file_path
             else:
@@ -293,6 +367,16 @@ def download_soop_video_cli(soop_url, quality="360p", output_path=None):
             print("오류: SOOP 영상 다운로드에 실패했습니다.")
             return None
         
+        # 파일명 정리
+        old_file_path = downloaded_file_path
+        sanitized_filename = sanitize_filename(os.path.basename(downloaded_file_path))
+        new_file_path = os.path.join(os.path.dirname(downloaded_file_path), sanitized_filename)
+        
+        if old_file_path != new_file_path:
+            os.rename(old_file_path, new_file_path)
+            print(f"파일명 변경: {os.path.basename(old_file_path)} -> {sanitized_filename}")
+            downloaded_file_path = new_file_path
+
         print(f"SOOP 다운로드 완료! -> {downloaded_file_path}")
         return downloaded_file_path
 
@@ -440,14 +524,15 @@ def main():
             with YoutubeDL({'quiet': True, 'no_warnings': True}) as ydl:
                 info_dict = ydl.extract_info(args.youtube or args.download, download=False)
                 video_id = info_dict.get('id')
-        elif args.soop_url and video_file_path:
-            # SOOP 비디오의 경우, 다운로드된 파일명에서 ID 추출
-            base_filename = os.path.basename(video_file_path)
-            # 파일명 형식: %(uploader)s_%(id)s.{quality}.%(ext)s 또는 %(title)s.{quality}.%(ext)s
-            # .quality.ext 부분을 제거하여 순수한 ID 부분만 남김
-            # 예: uploader_id.best.mp4 -> uploader_id
-            # 예: title.best.mp4 -> title
-            video_id = base_filename.rsplit('.', 2)[0] # 마지막 두 점(.)을 기준으로 분리하여 앞 부분 가져오기
+        elif args.soop_url:
+            # SOOP 비디오의 경우, yt-dlp를 사용하여 비디오 ID 추출
+            try:
+                with YoutubeDL({'quiet': True, 'no_warnings': True}) as ydl:
+                    info_dict = ydl.extract_info(args.soop_url, download=False)
+                    video_id = info_dict.get('id')
+            except Exception as e:
+                print(f"SOOP 비디오 정보 추출 중 오류 발생: {str(e)}")
+                video_id = None
 
         audio_file = extract_audio(video_file_path, video_id=video_id)
         

@@ -120,7 +120,7 @@ def main():
     parser.add_argument("--output", default="./result/result.md", help="Path to the output file.")
     parser.add_argument("--model", default="gemini", help="AI model to use ('ollama' or 'gemini').")
     parser.add_argument("--ollama_model_name", default="gpt-oss:20b", help="Ollama model name to use.")
-    parser.add_argument("--gemini_model_name", default="gemini-2.5-flash", help="Gemini model name to use.")
+    parser.add_argument("--gemini_model_name", default="gemini-flash-latest", help="Gemini model name to use.")
     parser.add_argument("--cpu", action='store_true', help="Force CPU usage for Ollama.")
     
     args = parser.parse_args()
