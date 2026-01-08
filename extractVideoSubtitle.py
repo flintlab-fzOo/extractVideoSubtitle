@@ -29,7 +29,7 @@ def check_ffmpeg_installation():
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
 
-def sanitize_filename(filename):
+def sanitize_filenameOld(filename):
     """
     파일명을 안전하게 정리합니다.
     - 공백을 언더스코어(_)로 바꿉니다.
@@ -44,6 +44,36 @@ def sanitize_filename(filename):
     # 허용된 특수문자 ([, ], -, (, ))를 제외한 모든 특수문자를 언더스코어로 바꿉니다.
     # re.sub(r'[^\w\s\[\]\-\.]', '_', text) 여기서 \w는 영문 숫자 언더스코어
     sanitized_base = re.sub(r'[^\w\[\]\-\(\).]', '_', sanitized_base)
+    
+    return f"{sanitized_base}{ext}"
+
+def sanitize_filename(filename):
+    """
+    파일명을 안전하게 정리합니다.
+    - 공백을 언더스코어(_)로 바꿉니다.
+    - 허용된 특수문자 ([, ], -, ., (, ))를 제외한 다른 특수문자를 언더스코어(_)로 바꿉니다.
+    - CP949 등에서 인코딩 불가능한 문자(예: ⧸ 또는 \uFFFF 범위)를 언더스코어(_)로 변환합니다.
+    - 운영체제에서 허용되지 않는 문자들도 제거합니다 (예: Windows의 reserved characters).
+    """
+    # 파일 확장자를 분리합니다.
+    base, ext = os.path.splitext(filename)
+    
+    # 공백을 언더스코어로 바꿉니다.
+    sanitized_base = base.replace(' ', '_')
+    
+    # 허용된 특수문자 ([, ], -, ., (, ))를 제외한 모든 특수문자를 언더스코어로 바꿉니다.
+    # re.sub(r'[^\w\s\[\]\-\.]', '_', text) 여기서 \w는 영문 숫자 언더스코어
+    sanitized_base = re.sub(r'[^\w\[\]\-\(\).]', '_', sanitized_base)
+    
+    # 추가로 ⧸, \ 같은 인코딩 문제를 일으키는 문자를 _로 바꿈
+    sanitized_base = sanitized_base.replace('⧸', '_').replace('\\', '_')
+
+    # 유니코드 문자 중 CP949와 호환되지 않는 문자들을 _로 변환
+    sanitized_base = ''.join(c if c.isprintable() else '_' for c in sanitized_base)
+    
+    # 운영체제에 따라 금지된 문자 처리 (여기서는 Windows 기준 예)
+    invalid_chars = r'[\\/*?:"<>|]'
+    sanitized_base = re.sub(invalid_chars, '_', sanitized_base)
     
     return f"{sanitized_base}{ext}"
 

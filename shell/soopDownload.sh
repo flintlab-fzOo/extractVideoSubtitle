@@ -6,4 +6,4 @@ if [ -z "$1" ]; then
 fi
 
 cd ..
-uv run soop_downloader.py --username '[soopid]' --password '[sooppassword]' --url "$1"
+uv run soop_downloader.py --username ventalure --password 'qwas1212!@' --url "$1"
