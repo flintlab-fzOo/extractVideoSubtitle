@@ -18,3 +18,6 @@ logs
 desktop.ini
 python.egg-info/*
 result/*
+build/*
+dist/*
+*.spec

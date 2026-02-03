@@ -152,3 +152,14 @@ uv run aichat.py --prompt "오늘 날씨는 어때?" --system_prompt "./prompt/w
 ```bash
 uv run aichat.py --prompt "./prompt/main_request.md" --ref_prompt "./prompt/reference_data.md" --output ./result/combined_response.md
 ```
+
+
+
+
+
+
+
+  # exe 생성 (단일 파일)
+```
+  pyinstaller --onefile --windowed --name "VODDownloader" vodDownload.py
+```

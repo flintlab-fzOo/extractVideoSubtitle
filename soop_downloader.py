@@ -60,9 +60,9 @@ def download_soop_stream(url, quality="best", username=None, password=None):
             info = ydl.extract_info(url, download=False)
             title = info.get('title', '알 수 없는 스트림 제목')
             uploader = info.get('uploader', '알 수 없는 BJ')
-            
+
             print(f"스트림 정보 확인 - BJ: {uploader}, 제목: {title}")
-            
+
             # 실제 다운로드 시작
             ydl.download([url])
             downloaded_file_path = ydl.prepare_filename(info)
@@ -83,14 +83,16 @@ def download_soop_vod(url, quality="best", username=None, password=None):
     print(f"\nSOOP VOD 다운로드를 시작합니다: {url}")
 
     # yt-dlp 포맷 문자열 구성
+    # SOOP VOD는 HLS 스트리밍을 사용하므로 ext=mp4 조건을 제거
     if quality == "best":
-        format_string = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
+        format_string = 'bestvideo+bestaudio/best'
     else:
-        # 특정 화질 요청 시, 해당 화질의 비디오와 최상 오디오를 시도하고, 없으면 최상으로 폴백
-        format_string = f'bestvideo[height<={quality[:-1]}][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
+        # 특정 화질 요청 시, 해당 화질 이하의 비디오와 최상 오디오를 선택
+        height = quality[:-1]  # "720p" -> "720"
+        format_string = f'bestvideo[height<={height}]+bestaudio/best[height<={height}]/best[height<={height}]'
 
     ydl_opts = {
-        'format': format_string, # 가능한 최상의 MP4 비디오 및 오디오, 없으면 최상
+        'format': format_string,
         'outtmpl': f'downloads/%(title)s.{quality}.%(ext)s', # 출력 파일 이름 템플릿: 제목.화질.확장자
 
         'noplaylist': True, # 단일 비디오만 다운로드
@@ -109,9 +111,9 @@ def download_soop_vod(url, quality="best", username=None, password=None):
             # 다운로드 전에 비디오 정보를 미리 추출하여 제목 확인
             info = ydl.extract_info(url, download=False)
             title = info.get('title', '알 수 없는 VOD 제목')
-            
+
             print(f"VOD 정보 확인 - 제목: {title}")
-            
+
             # 실제 다운로드 시작
             ydl.download([url])
             downloaded_file_path = ydl.prepare_filename(info)
@@ -128,7 +130,7 @@ def download_soop_vod(url, quality="best", username=None, password=None):
 def main():
     parser = argparse.ArgumentParser(description="SOOP (아프리카TV) 라이브 스트림 및 VOD 다운로더")
     parser.add_argument("--url", required=True, help="다운로드할 SOOP 영상 URL (스트리밍 또는 VOD)")
-    parser.add_argument("--quality", default="360p", help="다운로드할 영상의 화질 (예: 'best', '1080p', '720p', '480p'). 기본값은 'best'.")
+    parser.add_argument("--quality", default="720p", help="다운로드할 영상의 화질 (예: 'best', '1080p', '720p', '480p'). 기본값은 'best'.")
     parser.add_argument("--username", help="SOOP 계정 사용자 이름 (구독자 전용 영상 다운로드 시 필요)")
     parser.add_argument("--password", help="SOOP 계정 비밀번호 (구독자 전용 영상 다운로드 시 필요)")
     args = parser.parse_args()
